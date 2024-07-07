@@ -1,0 +1,102 @@
+/* Custom CSS */
+
+/* Navbar */
+.navbar {
+    background-color: #343a40; /* Dark background color */
+}
+
+.navbar-brand img {
+    max-height: 50px; /* Limiting height of the logo */
+}
+
+.navbar-nav .nav-link {
+    color: #ffffff; /* White text color for links */
+    transition: color 0.3s ease; /* Smooth transition for link color */
+    font-weight: 500; /* Medium font weight */
+}
+
+.navbar-nav .nav-link:hover {
+    color: #f8f9fa; /* Lighter text color on hover */
+}
+
+/* Slider */
+.carousel-item img {
+    max-height: 550px; /* Set maximum height for slider images */
+    width: 100%; /* Make sure images cover the entire width */
+}
+
+/* Modals */
+.modal-content {
+    background-color: #ffffff; /* White background color for modals */
+    border-radius: 15px; /* Rounded corners for modal content */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
+}
+
+.modal-title {
+    color: #343a40; /* Dark text color for modal titles */
+    font-weight: 600; /* Semi-bold font weight */
+}
+
+/* Cards */
+.card {
+    background-color: #ffffff; /* White background color for cards */
+    border-radius: 15px; /* Rounded corners for cards */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for transform and shadow */
+}
+
+.card:hover {
+    transform: translateY(-8px); /* Move card slightly upwards on hover */
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+
+.card-title {
+    margin-bottom: 0; /* Remove bottom margin for card titles */
+    font-size: 1.2rem; /* Increase font size */
+    font-weight: 600; /* Semi-bold font weight */
+}
+
+.card-text {
+    margin-bottom: 1rem; /* Add more bottom margin to card text */
+    color: #6c757d; /* Gray text color */
+}
+
+/* Footer */
+footer {
+    background-color: #343a40; /* Dark background color for footer */
+    color: #ffffff; /* White text color for footer */
+    padding: 20px 0; /* Add padding to top and bottom */
+    border-top: 1px solid #ffffff; /* White border on top */
+}
+
+/* Social media icons */
+.btn-floating i {
+    font-size: 1.8rem; /* Increase size of social media icons */
+    transition: transform 0.3s ease; /* Smooth transition for transform */
+}
+
+/* Hover effect on social media icons */
+.btn-floating:hover {
+    transform: scale(1.1); /* Scale up on hover */
+}
+
+/* Copyright */
+footer p {
+    margin-bottom: 0; /* Remove bottom margin from paragraph in footer */
+    font-size: 0.9rem; /* Decrease font size */
+}
+
+#botToTopBtn {
+    font-size: 40px;
+    color:rgb(115, 114, 114);
+    position: fixed;
+    top: 80%;
+    left: 95%;
+    cursor: pointer;
+    display: none;
+}
+
+#botToTopBtn:hover{
+    color: red;
+    scale: 1.3;
+}

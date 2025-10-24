@@ -4,29 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Daily Quests</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
-    <link rel="icon" href="img/kfc.png"
+    <link rel="icon" href="img/Logo.png">
+    <style>
+        /* small styles for the quest UI */
+        #botToTopBtn {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .quest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .5rem 0;
+        }
+
+        .points-badge {
+            min-width: 48px;
+            text-align: center;
+        }
+
+        .explosion-canvas {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1050;
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-sm bg-dark navbar-dark mr-auto">
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark mr-auto ml-auto">
         <a class="navbar-brand" href="index.html">
-            <img src="img/kfc.png" alt="Logo" style="width:60px;">
+            <img src="img/Logo.png" alt="Logo" style="width:60px;">
         </a>
         <ul class="navbar-nav">
             <li class="nav-item active">
                 <a class="nav-link" href="index.html">Trang chủ</a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link" href="introduce.html">Giới Thiệu</a>
+                <a class="nav-link" href="introduce.html">Nhiệm vụ hằng ngày</a>
             </li>
-            
+
             <li class="nav-item">
                 <a class="nav-link" href="contact1.html">Liên hệ</a>
             </li>
@@ -41,9 +74,66 @@
         </ul>
     </nav>
 
+    <!-- replaced main body: daily quests app -->
+    <div class="container mt-4" id="dailyQuestsApp">
+        <h3 class="text-center mb-3">Quests Hằng Ngày</h3>
 
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1">Mỗi ngày tối đa nhận được <strong>10 điểm</strong>. Mỗi quest có giá trị riêng
+                            (1-5 điểm).</p>
+                        <form id="questsForm">
+                            <div id="questsList" class="mb-2">
+                                <!-- quests injected here -->
+                            </div>
+                        </form>
 
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div>
+                                <button id="completeBtn" class="btn btn-success">Complete</button>
+                                <button id="resetTodayBtn" class="btn btn-outline-secondary btn-sm">Reset Today</button>
+                            </div>
+                            <div>
+                                <small>Đã nhận hôm nay: <span id="todayPoints">0</span>/10</small>
+                            </div>
+                        </div>
 
+                        <div class="progress mt-3" style="height:18px;">
+                            <div id="dailyProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%">
+                                0/10</div>
+                        </div>
+                    </div>
+                </div>
+                <small class="text-muted mt-2 d-block">Ghi chú: chỉ những quest chưa được đánh dấu completed hôm nay mới
+                    cộng điểm khi bấm Complete. Điểm thặng dư vượt 10 trong ngày sẽ bị giới hạn.</small>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5>Score Tổng</h5>
+                        <h2 id="scoreTotal" style="letter-spacing:2px">0</h2>
+                        <p id="scoreNote" class="text-muted mb-0">Đạt <strong>210</strong> điểm để kích hoạt hiệu ứng!
+                        </p>
+                        <div class="mt-3">
+                            <button id="clearScoreBtn" class="btn btn-outline-danger btn-sm">Xóa Score</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6>Lịch sử / Trạng thái hôm nay</h6>
+                        <ul id="todayStatus" class="list-unstyled mb-0"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- existing modals (login/register) remain unchanged -->
     <!-- Login Modal -->
     <div class="modal" id="loginModal">
         <div class="modal-dialog">
@@ -190,62 +280,57 @@
         </div>
     </div>
 
-    <div class="container mt-3">
-        <h3 class="text-center mb-2">Giới Thiệu</h3>
-        <p style="font-size: 19.3px;">KFC đã bắt đầu khai trương cửa hàng đầu tiên ở Việt Nam vào cuối năm 1997, tại Trung tâm Thương mại Sài Gòn
-            Super Bowl. Dù đối mặt với nhiều khó khăn khi khái niệm "thức ăn nhanh" vẫn hoàn toàn xa lạ tại đây, và liên
-            tục chịu lỗ trong suốt 7 năm đầu kinh doanh (17 cửa hàng trong 7 năm), nhưng với chiến lược tiếp cận hợp lý,
-            hệ thống nhà hàng của KFC Việt Nam đến nay đã phát triển tới hơn 140 nhà hàng, có mặt tại hơn 19 tỉnh/thành
-            phố lớn trên cả nước.[18] Hàng năm KFC thu hút khoảng 20 triệu lượt khách trong nước, chiếm khoảng 60% thị
-            trường thức ăn nhanh Việt Nam và góp phần giải quyết việc làm cho hơn 3 ngàn người lao động. Trước sức ép
-            ngày một lớn từ các tập đoàn kinh doanh gà rán nói riêng và thức ăn nhanh nói chung tương tự có tại Việt Nam
-            như: McDonald's, Lotteria, Burger King, Jollibee... KFC đã chế biến thêm một số món để phục vụ những thức ăn
-            hợp khẩu vị người Việt như: Gà quay giấy bạc, Gà Giòn Không Xương, Gà giòn Húng quế, Cơm gà, Cá thanh... Một
-            số món mới cũng đã được phát triển và giới thiệu tại thị trường Việt Nam, góp phần làm tăng thêm sự đa dạng
-            trong danh mục thực đơn: Bắp cải trộn, Khoai tây nghiền, Bánh nhân mứt, Bánh trứng nướng cùng nhiều suất ăn
-            cụ thể cho từng nhóm người.</p>
-        <div class="row">
-            <div class="col-6">
-                <h5>Địa chỉ:</h5><p>123 NDHA P12 Q213 TpHCM</p>
-                <h5>Hotline:</h5><p>+84 97865412</p>
-                <h5>Email:</h5><p >kfc@gmail.com</p>
-            </div>
-            <div class="col-6">
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d501726.54070207!2d106.36558024503368!3d10.75461814965386!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317529292e8d3dd1%3A0xf15f5aad773c112b!2zVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1710648973751!5m2!1svi!2s"
-                    width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <!-- Claim / Prize Modal (show when score >= 210) -->
+    <div class="modal" id="claimModal" tabindex="-1" role="dialog" aria-labelledby="claimModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="claimModalLabel">Bạn đã đạt 210 điểm!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Xin chúc mừng! Bạn đã đạt <strong>210</strong> điểm. Vui lòng liên hệ Facebook chính thức của
+                        admin để nhận quà:</p>
+                    <p><a href="https://facebook.com/your-admin-page" id="adminFbLink" target="_blank"
+                            rel="noopener">Facebook chính thức của admin</a></p>
+                    <p class="text-muted small">Sau khi đã liên hệ, bấm "Đã liên hệ" để đánh dấu nhận quà.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirmContactBtn">Đã liên hệ</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <footer class="bg-body-tertiary text-center p-3 bg-dark" style="background-color: rgba(0, 0, 0, 0.05);">
+    <!-- explosion canvas placeholder -->
+    <canvas id="explosionCanvas" class="explosion-canvas" style="display:none;"></canvas>
+
+    <!-- bot to top icon (existing) -->
+    <i class="fa-solid fa-circle-arrow-up" onclick="botToTop()" id="botToTopBtn"></i>
+    <footer class="mt-3 bg-body-tertiary text-center p-3 bg-dark" style="background-color: rgba(0, 0, 0, 0.05);">
         <!-- Grid container -->
         <div class="container p-4 pb-0">
             <!-- Section: Social media -->
-            <section class="mb-4">
+                        <section class="mb-4">
                 <!-- Facebook -->
                 <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #3b5998;"
-                    href="#!" role="button"><i class="fab fa-facebook-f"></i></a>
-
-                <!-- Twitter -->
-                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #55acee;"
-                    href="#!" role="button"><i class="fab fa-twitter"></i></a>
-
-                <!-- Google -->
-                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #dd4b39;"
-                    href="#!" role="button"><i class="fab fa-google"></i></a>
+                    href="https://www.facebook.com/people/Little-Ryan/61581956524218" role="button"><i
+                        class="fab fa-facebook-f"></i></a>
 
                 <!-- Instagram -->
                 <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #ac2bac;"
-                    href="#!" role="button"><i class="fab fa-instagram"></i></a>
+                    href="https://www.instagram.com/lil_ryan091701?igsh=c2E2ZHprZHBjZGl4" role="button"><i
+                        class="fab fa-instagram"></i></a>
 
-                <!-- Linkedin -->
-                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #0082ca;"
-                    href="#!" role="button"><i class="fab fa-linkedin-in"></i></a>
-                <!-- Github -->
-                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #333333;"
-                    href="#!" role="button"><i class="fab fa-github"></i></a>
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #ed302f;"
+                    href="https://www.youtube.com/@lilryan4B" role="button"><i class="fab fa-youtube"></i></a>
+
+                <!-- Chat GPT -->
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #00acee;"
+                    href="https://chatgpt.com/g/g-68de0cbfdde88191aef354c4a1e4a6e1-mental-coach-from-btx-hs-by-minh-phu" role="button"><i class="fa-solid fa-robot"></i></a>
             </section>
             <!-- Section: Social media -->
         </div>
@@ -254,13 +339,302 @@
         <!-- Copyright -->
         <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.173); color:aliceblue">
             © 2020 Copyright:
-            <a class="text-center" style="color:aqua" href="index.html">KFC.com</a>
+            <a class="text-center" style="color:aqua" href="index.html">Ryan.com</a>
         </div>
         <!-- Copyright -->
     </footer>
-    <i class="fa-solid fa-circle-arrow-up" onclick="botToTop()" id="botToTopBtn"></i>
+    <script>
+        (function () {
+            // Quests setup: total per day must be <= 10
+            const dailyCap = 10;
+            const quests = [
+                { id: 'q1', text: 'Thu thập 10 đồng', points: 2 },
+                { id: 'q2', text: 'Thắng 1 trận', points: 4 },
+                { id: 'q3', text: 'Ghé cửa hàng', points: 1 },
+                { id: 'q4', text: 'Hoàn thành tutorial', points: 3 }
+                // tổng: 10
+            ];
+
+            const el = {
+                list: document.getElementById('questsList'),
+                todayPoints: document.getElementById('todayPoints'),
+                dailyProgress: document.getElementById('dailyProgress'),
+                completeBtn: document.getElementById('completeBtn'),
+                scoreTotal: document.getElementById('scoreTotal'),
+                todayStatus: document.getElementById('todayStatus'),
+                resetTodayBtn: document.getElementById('resetTodayBtn'),
+                clearScoreBtn: document.getElementById('clearScoreBtn'),
+                explosionCanvas: document.getElementById('explosionCanvas')
+            };
+
+            // localStorage keys
+            const KEY_SCORE = 'game_score_total';
+            const KEY_DAY = 'game_day_date';
+            const KEY_COMPLETED = 'game_day_completed'; // object map { date: [ids] }
+            const KEY_PRIZE_CLAIMED = 'game_prize_claimed'; // mark if user confirmed contact for prize
+
+            function todayKey() {
+                return new Date().toISOString().slice(0, 10);
+            }
+
+            function showClaimModalIfNeeded() {
+                // only show if not already confirmed by user
+                if (localStorage.getItem(KEY_PRIZE_CLAIMED)) return;
+                // use Bootstrap modal (jQuery available)
+                if (window.$ && $('#claimModal').modal) {
+                    $('#claimModal').modal('show');
+                } else {
+                    alert('Bạn đã đạt 210 điểm! Vui lòng liên hệ Facebook chính thức của admin: https://facebook.com/your-admin-page');
+                }
+            }
+
+            function loadState() {
+                const score = parseInt(localStorage.getItem(KEY_SCORE) || '0', 10);
+                const date = localStorage.getItem(KEY_DAY) || '';
+                let completedMap = JSON.parse(localStorage.getItem(KEY_COMPLETED) || '{}');
+                // if stored date different, keep map but check entries by date keys
+                return { score, date, completedMap };
+            }
+
+            function saveScore(score) {
+                localStorage.setItem(KEY_SCORE, String(score));
+            }
+
+            function saveCompletedMap(map) {
+                localStorage.setItem(KEY_COMPLETED, JSON.stringify(map));
+            }
+
+            function renderList() {
+                const state = loadState();
+                const today = todayKey();
+                const completedMap = state.completedMap || {};
+                const completedToday = new Set(completedMap[today] || []);
+                el.list.innerHTML = '';
+                quests.forEach(q => {
+                    const checked = completedToday.has(q.id) ? 'checked disabled' : '';
+                    const item = document.createElement('div');
+                    item.className = 'quest-item';
+                    item.innerHTML = `
+                    <div class="form-check">
+                        <input class="form-check-input quest-checkbox" type="checkbox" value="${q.id}" id="${q.id}" data-points="${q.points}" ${checked}>
+                        <label class="form-check-label" for="${q.id}">
+                            ${q.text}
+                        </label>
+                    </div>
+                    <span class="badge badge-primary points-badge">${q.points} pt</span>
+                `;
+                    el.list.appendChild(item);
+                });
+                updateUI();
+            }
+
+            function sumCheckedPoints() {
+                const inputs = Array.from(document.querySelectorAll('.quest-checkbox'));
+                let sum = 0;
+                inputs.forEach(i => {
+                    if (i.checked && !i.disabled) sum += Number(i.dataset.points || 0);
+                });
+                return sum;
+            }
+
+            function sumCompletedToday() {
+                const state = loadState();
+                const today = todayKey();
+                const completed = (state.completedMap && state.completedMap[today]) || [];
+                return quests.filter(q => completed.includes(q.id)).reduce((s, q) => s + q.points, 0);
+            }
+
+            function updateUI() {
+                const checkedSum = sumCheckedPoints();
+                const completedSum = sumCompletedToday();
+                const totalToday = Math.min(dailyCap, completedSum + checkedSum);
+                el.todayPoints.textContent = totalToday;
+                const pct = Math.round((totalToday / dailyCap) * 100);
+                el.dailyProgress.style.width = pct + '%';
+                el.dailyProgress.textContent = `${totalToday}/${dailyCap}`;
+                const state = loadState();
+                el.scoreTotal.textContent = state.score;
+                // today status list
+                el.todayStatus.innerHTML = '';
+                const completed = (state.completedMap && state.completedMap[todayKey()]) || [];
+                quests.forEach(q => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${q.text} — <strong>${q.points}pt</strong> ${completed.includes(q.id) ? '<span class="text-success"> (Done)</span>' : ''}`;
+                    el.todayStatus.appendChild(li);
+                });
+            }
+
+            el.completeBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const state = loadState();
+                const today = todayKey();
+                const completedMap = state.completedMap || {};
+                const completedToday = new Set(completedMap[today] || []);
+                const newlyChecked = Array.from(document.querySelectorAll('.quest-checkbox'))
+                    .filter(i => i.checked && !i.disabled)
+                    .map(i => ({ id: i.value, points: Number(i.dataset.points || 0) }));
+
+                let newPoints = newlyChecked.reduce((s, q) => s + q.points, 0);
+                const alreadyPoints = sumCompletedToday();
+                const remaining = Math.max(0, dailyCap - alreadyPoints);
+                const pointsToAdd = Math.min(newPoints, remaining);
+
+                if (pointsToAdd <= 0) {
+                    alert('Không còn điểm có thể nhận hôm nay (đã đạt giới hạn 10 điểm).');
+                    return;
+                }
+
+                // add to total score
+                const newScore = state.score + pointsToAdd;
+                saveScore(newScore);
+
+                // mark those quest ids as completed for today (but only up to remaining)
+                // we will greedily mark in order until remaining consumed
+                let rem = remaining;
+                completedMap[today] = completedMap[today] || [];
+                for (const q of newlyChecked) {
+                    if (rem <= 0) break;
+                    if (!completedToday.has(q.id)) {
+                        const take = Math.min(q.points, rem);
+                        // If a quest is partially exceeding cap, we still mark it done but only award partial points
+                        // For simplicity, we mark quest done once any points taken for it
+                        completedMap[today].push(q.id);
+                        rem -= take;
+                    }
+                }
+
+                saveCompletedMap(completedMap);
+                renderList();
+
+                if (newScore >= 210) {
+                    triggerExplosion();
+                    // show contact popup/modal to claim prize
+                    showClaimModalIfNeeded();
+                }
+            });
+
+            // claim modal button: mark as claimed and close
+            document.addEventListener('click', function (ev) {
+                const t = ev.target;
+                if (t && t.id === 'confirmContactBtn') {
+                    localStorage.setItem(KEY_PRIZE_CLAIMED, '1');
+                    if (window.$ && $('#claimModal').modal) $('#claimModal').modal('hide');
+                    alert('Đã ghi nhận. Cảm ơn bạn đã liên hệ admin để nhận quà.');
+                }
+            });
+
+            // reset today's completed quests (for testing)
+            el.resetTodayBtn.addEventListener('click', function () {
+                const confirmed = confirm('Reset trạng thái quests hôm nay?');
+                if (!confirmed) return;
+                const state = loadState();
+                const map = state.completedMap || {};
+                delete map[todayKey()];
+                saveCompletedMap(map);
+                renderList();
+            });
+
+            el.clearScoreBtn.addEventListener('click', function () {
+                if (confirm('Xóa tổng Score?')) {
+                    saveScore(0);
+                    renderList();
+                }
+            });
+
+            // explosion: simple particle burst on canvas
+            function triggerExplosion() {
+                const canvas = el.explosionCanvas;
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                canvas.style.display = 'block';
+                const ctx = canvas.getContext('2d');
+                const particles = [];
+                const colors = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93', '#ff6b6b', '#ffd166'];
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const count = 160;
+                for (let i = 0; i < count; i++) {
+                    const ang = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 8;
+                    particles.push({
+                        x: cx,
+                        y: cy,
+                        vx: Math.cos(ang) * speed,
+                        vy: Math.sin(ang) * speed,
+                        life: 70 + Math.random() * 40,
+                        r: 2 + Math.random() * 4,
+                        c: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                }
+                let t = 0;
+                function frame() {
+                    t++;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += 0.08; // gravity
+                        p.vx *= 0.99;
+                        p.vy *= 0.99;
+                        p.life--;
+                        ctx.beginPath();
+                        ctx.globalAlpha = Math.max(0, p.life / 100);
+                        ctx.fillStyle = p.c;
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    ctx.globalAlpha = 1;
+                    if (particles.some(p => p.life > 0)) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        canvas.style.display = 'none';
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                }
+                frame();
+                // small screen flash
+                const flash = document.createElement('div');
+                flash.style.position = 'fixed';
+                flash.style.left = '0'; flash.style.top = '0';
+                flash.style.width = '100%'; flash.style.height = '100%';
+                flash.style.background = 'rgba(255,240,200,0.25)';
+                flash.style.zIndex = 1049;
+                document.body.appendChild(flash);
+                setTimeout(() => document.body.removeChild(flash), 420);
+            }
+
+            // initial render
+            renderList();
+            // if user already has score >=210 on load, show modal (unless already confirmed)
+            (function checkExistingScore() {
+                const state = loadState();
+                if (state.score >= 210) {
+                    // trigger explosion visually once on load (optional) and show claim modal
+                    // do not auto-trigger explosion repeatedly; just show claim modal
+                    showClaimModalIfNeeded();
+                }
+            })();
+
+            // ensure UI updates when checking/unchecking (update progress live)
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.classList && e.target.classList.contains('quest-checkbox')) {
+                    // if a checkbox was disabled (already completed) ignore
+                    updateUI();
+                }
+            });
+
+            // keep responsive: re-create canvas size on resize
+            window.addEventListener('resize', () => {
+                if (el.explosionCanvas.style.display !== 'none') {
+                    el.explosionCanvas.width = window.innerWidth;
+                    el.explosionCanvas.height = window.innerHeight;
+                }
+            });
+
+        })();
+    </script>
+
     <script src="bot_to_top.js"></script>
 </body>
 
-
-</html> 
+</html>

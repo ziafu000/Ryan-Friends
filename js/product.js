@@ -1,13 +1,13 @@
-$(document).ready(function(){
+$(document).ready(function () {
     if (localStorage.getItem('products') != undefined && localStorage.getItem('products') != null) {
-        var products = JSON.parse(localStorage.getItem('products'));   
-  }else{
-      var products=[];
-  }
-  if (products.length>0) {
-      var html = '';
-      for (var product of products){
-          html += `
+        var products = JSON.parse(localStorage.getItem('products'));
+    } else {
+        var products = [];
+    }
+    if (products.length > 0) {
+        var html = '';
+        for (var product of products) {
+            html += `
           <div class="col-lg-3 col-6 mt-3 ">
                 <div class="card">
                     <img class="card-img-top" src="${product.productImg}">
@@ -20,8 +20,8 @@ $(document).ready(function(){
                 </div>
             </div>            
               `
-      }
-  }
-  $('#productData').html(html)
+        }
+    }
+    $('#productData').html(html)
 
 })

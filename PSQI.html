@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSQI — Ryan</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="icon" href="img/Logo.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png">
+  <meta name="theme-color" content="#22d3ee">
+  <style>
+    .psqi-container {
+      max-width: 1024px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 8px 0 14px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 14px 0 10px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-weight: 700;
+    }
+
+    input[type="time"],
+    input[type="number"],
+    select,
+    input[type="text"] {
+      background: var(--bg-2);
+      color: var(--text);
+      border: 1px solid var(--card-bd);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 14px;
+    }
+
+    .k-note {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 720px) {
+
+      .grid,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark mr-auto ml-auto">
+    <a class="navbar-brand" href="index.html">
+      <img src="img/Logo.png" alt="Logo" style="width:60px;">
+    </a>
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="index.html">Trang chủ</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="introduce.html">Nhiệm vụ hằng ngày</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="PSQI.html">Tính PSQI</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="contact1.html">Liên hệ</a>
+      </li>
+
+    </ul>
+  </nav>
+
+  <main class="psqi-container">
+    <div class="container" style="padding:18px;">
+      <h1>PSQI — Pittsburgh Sleep Quality Index</h1>
+      <p class="k-note">Điền theo tình trạng <b>trong tháng vừa qua</b>. Bấm <b>Xem kết quả</b> để ra tổng điểm PSQI
+        (0–21). PSQI &gt; 5 thường được xem là chất lượng ngủ kém.</p>
+      <hr style="border-color: var(--card-bd); opacity:.5; margin: 10px 0 16px;">
+
+      <h2>1) Thời gian đi ngủ / thức dậy & độ trễ / thời lượng</h2>
+      <div class="grid card">
+        <div class="field">
+          <label for="q1_bed">Q1. Thường đi ngủ lúc mấy giờ?</label>
+          <input id="q1_bed" type="time" required value="">
+        </div>
+        <div class="field">
+          <label for="q3_wake">Q3. Thường thức dậy lúc mấy giờ?</label>
+          <input id="q3_wake" type="time" required value="">
+        </div>
+        <div class="field">
+          <label for="q2_latency">Q2. Mất bao lâu để vào giấc? (phút)</label>
+          <input id="q2_latency" type="number" min="0" step="1" value="" placeholder="ví dụ: 20">
+        </div>
+        <div class="field">
+          <label for="q4_hours">Q4. Số giờ ngủ thực tế mỗi đêm? (giờ, có thể thập phân)</label>
+          <input id="q4_hours" type="number" min="0" step="0.1" value="" placeholder="ví dụ: 7.0">
+        </div>
+      </div>
+
+      <h2>2) Những yếu tố làm gián đoạn giấc ngủ (tần suất)</h2>
+      <p class="k-note">0 = Không trong tháng; 1 = &lt;1 lần/tuần; 2 = 1–2 lần/tuần; 3 = ≥3 lần/tuần</p>
+      <div class="grid-3 card" id="q5_block">
+        <div class="field">
+          <label for="q5a">Q5a. Khó ngủ (&gt;30’)</label>
+          <select id="q5a">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5b">Q5b. Tỉnh giữa đêm / dậy sớm</label>
+          <select id="q5b">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5c">Q5c. Thức dậy đi vệ sinh</label>
+          <select id="q5c">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5d">Q5d. Khó thở</label>
+          <select id="q5d">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5e">Q5e. Ho / ngáy to</label>
+          <select id="q5e">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5f">Q5f. Quá lạnh</label>
+          <select id="q5f">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5g">Q5g. Quá nóng</label>
+          <select id="q5g">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5h">Q5h. Ác mộng</label>
+          <select id="q5h">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q5i">Q5i. Đau nhức</label>
+          <select id="q5i">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label for="q5j">Q5j. Lý do khác (mô tả ngắn + chọn tần suất)</label>
+          <input id="q5j_text" type="text" placeholder="(tuỳ chọn) mô tả lý do khác">
+          <select id="q5j">
+            <option value="" disabled selected>Chọn tần suất</option>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
+      </div>
+
+      <h2>3) Đánh giá chung & ban ngày</h2>
+      <div class="grid card">
+        <div class="field">
+          <label for="q6_quality">Q6. Chất lượng ngủ chủ quan</label>
+          <select id="q6_quality">
+            <option value="0">Rất tốt (0)</option>
+            <option value="1">Khá (1)</option>
+            <option value="2">Kém (2)</option>
+            <option value="3">Rất kém (3)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q7_med">Q7. Dùng thuốc ngủ</label>
+          <select id="q7_med">
+            <option value="0">Không bao giờ (0)</option>
+            <option value="1">&lt;1 lần/tuần (1)</option>
+            <option value="2">1–2 lần/tuần (2)</option>
+            <option value="3">≥3 lần/tuần (3)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q8_day">Q8. Buồn ngủ ban ngày (khó thức)</label>
+          <select id="q8_day">
+            <option value="0">Không bao giờ (0)</option>
+            <option value="1">&lt;1 lần/tuần (1)</option>
+            <option value="2">1–2 lần/tuần (2)</option>
+            <option value="3">≥3 lần/tuần (3)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="q9_enth">Q9. Khó giữ hứng thú làm việc</label>
+          <select id="q9_enth">
+            <option value="0">Không bao giờ (0)</option>
+            <option value="1">&lt;1 lần/tuần (1)</option>
+            <option value="2">1–2 lần/tuần (2)</option>
+            <option value="3">≥3 lần/tuần (3)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="btnCompute">Xem kết quả</button>
+        <button class="btn btn-outline-secondary" id="btnSavePre">Lưu vào HL: PSQI-pre</button>
+        <button class="btn btn-outline-secondary" id="btnSavePost">Lưu vào HL: PSQI-post</button>
+      </div>
+
+      <br>
+      <p class="k-note">* Hai nút “Lưu vào HL” sẽ ghi vào <code>Settings</code> nếu dự án Harmony Loop đang được load
+        trên cùng origin.</p>
+    </div>
+  </main>
+
+  <footer class="mt-3 bg-body-tertiary text-center p-3 bg-dark" style="background-color: rgba(0, 0, 0, 0.05);">
+    <div class="container p-4 pb-0">
+      <section class="mb-4">
+        <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #3b5998;"
+          href="https://www.facebook.com/people/Little-Ryan/61581956524218" role="button"><i
+            class="fab fa-facebook-f"></i></a>
+        <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #ac2bac;"
+          href="https://www.instagram.com/lil_ryan091701?igsh=c2E2ZHprZHBjZGl4" role="button"><i
+            class="fab fa-instagram"></i></a>
+        <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #ed302f;"
+          href="https://www.youtube.com/@lilryan4B" role="button"><i class="fab fa-youtube"></i></a>
+        <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #00acee;"
+          href="https://chatgpt.com/g/g-68de0cbfdde88191aef354c4a1e4a6e1-mental-coach-from-btx-hs-by-minh-phu"
+          role="button"><i class="fa-solid fa-robot"></i></a>
+        <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #7952b3;"
+          href="https://heyzine.com/flip-book/8b687e4195.html" role="button"><i class="fa-solid fa-book"></i></a>
+      </section>
+    </div>
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.173); color:aliceblue">
+      <a class="text-center" style="color:aqua" href="index.html">Ryan.com</a>
+    </div>
+  </footer>
+  <i class="fa-solid fa-circle-arrow-up" onclick="botToTop()" id="botToTopBtn"></i>
+
+  <script src="js/product.js"></script>
+  <script src="bot_to_top.js"></script>
+  <script src="hl/state.js"></script>
+  <script src="hl/logger.js"></script>
+  <script src="hl/settings.js"></script>
+  <script src="hl/sjl.metrics.js"></script>
+  <script src="hl/sjl.heatmap.js"></script>
+  <script src="hl/dashboard.js"></script>
+  <script src="hl/planner.js"></script>
+  <script src="hl/examday.js"></script>
+  <script src="hl/jitai.js"></script>
+  <script src="hl/datalab.js"></script>
+  <script src="hl/onboarding.js"></script>
+
+  <script>
+    function hmToMin(hm) {
+      if (!hm) return null;
+      const [H, M] = hm.split(':').map(Number);
+      if (Number.isNaN(H) || Number.isNaN(M)) return null;
+      return H * 60 + M;
+    }
+    function diffMinAcrossMidnight(bedMin, wakeMin) {
+      let d = wakeMin - bedMin;
+      if (d <= 0) d += 1440;
+      return d;
+    }
+    function scoreC2(latencyMin, q5a) {
+      let q2;
+      if (latencyMin <= 15) q2 = 0;
+      else if (latencyMin <= 30) q2 = 1;
+      else if (latencyMin <= 60) q2 = 2;
+      else q2 = 3;
+      const sum = q2 + q5a;
+      if (sum <= 0) return 0;
+      if (sum <= 2) return 1;
+      if (sum <= 4) return 2;
+      return 3;
+    }
+    function scoreC3(hours) {
+      if (hours > 7) return 0;
+      if (hours >= 6) return 1;
+      if (hours >= 5) return 2;
+      return 3;
+    }
+    function scoreC4(eff) {
+      if (eff > 85) return 0;
+      if (eff >= 75) return 1;
+      if (eff >= 65) return 2;
+      return 3;
+    }
+    function scoreC5(sum_b_to_j) {
+      if (sum_b_to_j === 0) return 0;
+      if (sum_b_to_j <= 9) return 1;
+      if (sum_b_to_j <= 18) return 2;
+      return 3;
+    }
+    function scoreC7(q8, q9) {
+      const s = q8 + q9;
+      if (s <= 1) return 0;
+      if (s <= 3) return 1;
+      if (s <= 5) return 2;
+      return 3;
+    }
+
+    function computePSQI() {
+      const q1_bed = document.getElementById('q1_bed').value;
+      const q3_wake = document.getElementById('q3_wake').value;
+      const q2_lat = Number(document.getElementById('q2_latency').value || 0);
+      const q4_h = Number(document.getElementById('q4_hours').value || 0);
+
+      const q5a = Number(document.getElementById('q5a').value);
+      const q5b = Number(document.getElementById('q5b').value);
+      const q5c = Number(document.getElementById('q5c').value);
+      const q5d = Number(document.getElementById('q5d').value);
+      const q5e = Number(document.getElementById('q5e').value);
+      const q5f = Number(document.getElementById('q5f').value);
+      const q5g = Number(document.getElementById('q5g').value);
+      const q5h = Number(document.getElementById('q5h').value);
+      const q5i = Number(document.getElementById('q5i').value);
+      const q5j = Number(document.getElementById('q5j').value);
+
+      const q6 = Number(document.getElementById('q6_quality').value);
+      const q7 = Number(document.getElementById('q7_med').value);
+      const q8 = Number(document.getElementById('q8_day').value);
+      const q9 = Number(document.getElementById('q9_enth').value);
+
+      const bedMin = hmToMin(q1_bed);
+      const wakeMin = hmToMin(q3_wake);
+
+      const timeInBedMin = diffMinAcrossMidnight(bedMin, wakeMin);
+      const timeInBedH = timeInBedMin / 60;
+      const eff = timeInBedH > 0 ? (q4_h / timeInBedH) * 100 : 0;
+
+      const C1 = q6;
+      const C2 = scoreC2(q2_lat, q5a);
+      const C3 = scoreC3(q4_h);
+      const C4 = scoreC4(eff);
+      const C5 = scoreC5(q5b + q5c + q5d + q5e + q5f + q5g + q5h + q5i + q5j);
+      const C6 = q7;
+      const C7 = scoreC7(q8, q9);
+
+      const total = C1 + C2 + C3 + C4 + C5 + C6 + C7;
+
+      return {
+        timeInBedH: Math.round(timeInBedH * 10) / 10,
+        efficiency: Math.round(eff * 10) / 10,
+        components: { C1, C2, C3, C4, C5, C6, C7 },
+        total,
+        flag: total > 5 ? "Chất lượng ngủ kém (PSQI > 5)" : "Chất lượng ngủ tốt (PSQI ≤ 5)"
+      };
+    }
+
+    function renderResult(res) {
+      const el = document.getElementById('result');
+      el.classList.remove('hide');
+      el.innerHTML = `
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Kết quả PSQI</h2>
+            <span class="btn btn-outline-secondary" id="btnCopy">Copy JSON</span>
+          </div>
+          <div class="row" style="margin-top:8px;">
+            <div class="card" style="padding:10px; flex:1;">
+              <div><b>Tổng PSQI:</b> ${res.total} <span class="muted">(${res.flag})</span></div>
+              <div><b>Hiệu suất ngủ:</b> ${res.efficiency}% &nbsp;|&nbsp; <b>Thời gian nằm giường:</b> ${res.timeInBedH} h</div>
+            </div>
+          </div>
+          <div class="grid" style="margin-top:10px;">
+            <div class="card" style="padding:10px;">
+              <b>Thành phần:</b>
+              <ul style="margin:8px 0 0 16px; line-height:1.6;">
+                <li>C1 (Chất lượng chủ quan): ${res.components.C1}</li>
+                <li>C2 (Độ trễ vào giấc): ${res.components.C2}</li>
+                <li>C3 (Thời lượng ngủ): ${res.components.C3}</li>
+                <li>C4 (Hiệu suất ngủ): ${res.components.C4}</li>
+                <li>C5 (Quấy rối giấc ngủ): ${res.components.C5}</li>
+                <li>C6 (Thuốc ngủ): ${res.components.C6}</li>
+                <li>C7 (Chức năng ban ngày): ${res.components.C7}</li>
+              </ul>
+            </div>
+            <div class="card" style="padding:10px;">
+              <b>Gợi ý nhập Settings (HL):</b>
+              <div class="k-note">Bạn có thể dùng nút “Lưu vào HL” để đổ thẳng PSQI vào <code>psqi_pre</code> hoặc <code>psqi_post</code>.</div>
+              <pre style="white-space:pre-wrap; margin-top:8px; font-family:ui-monospace,Consolas,Monaco,monospace;">
+{
+  "psqi_total": %TOTAL%,
+  "efficiency_pct": %EFF%
+}</pre>
+            </div>
+          </div>
+        `.replace("%TOTAL%", res.total).replace("%EFF%", res.efficiency);
+
+      document.getElementById('btnCopy').onclick = () => {
+        const payload = { psqi_total: res.total, efficiency_pct: res.efficiency, components: res.components };
+        navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      };
+    }
+
+    function saveToHL(which, total) {
+      try {
+        const s = JSON.parse(localStorage.getItem("hl_v1_state")) || null;
+        if (!s || !s.settings) { alert("Không tìm thấy HL state trên cùng origin."); return; }
+        s.settings = s.settings || {};
+        if (which === "pre") s.settings.psqi_pre = total;
+        else s.settings.psqi_post = total;
+        localStorage.setItem("hl_v1_state", JSON.stringify(s));
+        alert("Đã lưu vào HL (" + (which === "pre" ? "psqi_pre" : "psqi_post") + ") = " + total);
+      } catch (e) {
+        alert("Không ghi được vào localStorage.hl_v1_state");
+      }
+    }
+
+    document.getElementById('btnCompute').addEventListener('click', function () {
+      const res = computePSQI();
+      renderResult(res);
+      window.__PSQI_LAST__ = res;
+    });
+    document.getElementById('btnSavePre').addEventListener('click', function () {
+      const res = window.__PSQI_LAST__ || computePSQI();
+      saveToHL("pre", res.total);
+    });
+    document.getElementById('btnSavePost').addEventListener('click', function () {
+      const res = window.__PSQI_LAST__ || computePSQI();
+      saveToHL("post", res.total);
+    });
+  </script>
+</body>
+
+</html>

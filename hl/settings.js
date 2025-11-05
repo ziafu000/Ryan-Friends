@@ -8,7 +8,7 @@
   }
   function buildModal() {
     const overlay = el("div", { id: "settings-overlay", style: { position: "fixed", inset: "0", background: "rgba(0,0,0,.5)", display: "none", zIndex: "10000" } });
-    const box = el("div", { class: "card hl-modal-card", style: { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(520px,92vw)", padding: "16px" } });
+    const box = el("div", { class: "card hl-modal-card", style: { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(490px,92vw)", padding: "16px" } });
     const header = el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" } }, [
       el("div", { style: { fontWeight: "800", fontSize: "18px" } }, "Settings / Onboarding"),
       el("button", { id: "settings-close", class: "btn btn-outline-secondary" }, "Đóng")
@@ -30,8 +30,16 @@
     grid.append(
       el("div", {}, [el("label", {}, ["Mã HS"]), stuid]),
       el("div", {}, [el("label", {}, ["Ngày bắt đầu Pha A"]), phaseA]),
-      el("div", {}, [el("label", {}, ["PSQI Pre (0–21)"]), psqiPre]),
-      el("div", {}, [el("label", {}, ["PSQI Post (0–21)"]), psqiPost])
+      el("div", {}, [
+        el("label", {}, ["PSQI Pre (0–21)"]),
+        psqiPre,
+        el("div", { style: { fontSize: "12px", color: "#6b7280" } }, "làm quick test ở trang 'Tính PSQI' để biết chỉ số")
+      ]),
+      el("div", {}, [
+        el("label", {}, ["PSQI Post (0–21)"]),
+        psqiPost,
+        el("div", { style: { fontSize: "12px", color: "#6b7280" } }, "làm quick test ở trang 'Tính PSQI' để biết chỉ số")
+      ])
     );
     const msg = el("div", { id: "hl_set_msg", style: { fontSize: "12px", color: "#6b7280", marginTop: "6px" } });
     content.append(grid, el("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: "12px" } }, [btnSave]), msg);

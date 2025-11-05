@@ -21,7 +21,7 @@
 
     const contentDiv = document.querySelector("#onboarding-overlay .card").lastChild;
     const grid = el("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" } });
-    const stuid = el("input", { id: "hl_ob_id", placeholder: "Mã HS" });
+    const stuid = el("input", { id: "hl_ob_id", placeholder: "Ví dụ: 11A16-34" });
     const schoolDays = el("input", { id: "hl_ob_school", placeholder: "Ngày học (vd: Mon-Fri)" });
     const tgtSleep = el("input", { id: "hl_ob_tgs", type: "time", placeholder: "Mục tiêu ngủ (vd 22:30)" });
     const tgtWake = el("input", { id: "hl_ob_tgw", type: "time", placeholder: "Mục tiêu dậy (vd 06:00)" });

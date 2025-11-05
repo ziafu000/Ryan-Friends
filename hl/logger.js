@@ -28,7 +28,7 @@
     row1.append(el("div", {}, [el("label", {}, ["Ngày"]), inDate]), el("div", {}, [el("label", {}, ["Loại ngày"]), selKind]), el("div", {}, [el("label", {}, ["Ngủ"]), inBed]), el("div", {}, [el("label", {}, ["Dậy"]), inWake]));
     const row2 = el("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginTop: "8px" } });
     const note = el("input", { id: "hl_log_note", placeholder: "Ghi chú" });
-    const kss = el("input", { id: "hl_log_kss", type: "number", min: "1", max: "9", placeholder: "KSS 1–9" });
+    const kss = el("input", { id: "hl_log_kss", type: "number", min: "1", max: "9", placeholder: "KSS 1–9", style: { width: "100px" } });
     const quick = el("div", {}, [
       el("button", { id: "hl_now_bed", class: "btn btn-outline-secondary", style: { marginRight: "6px" } }, "Bed = Now"),
       el("button", { id: "hl_now_wake", class: "btn btn-outline-secondary" }, "Wake = Now")

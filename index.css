@@ -4,16 +4,20 @@
 /* Custom CSS - rounded / cute adjustments */
 
 /* Theme colors (orange & yellow) */
-:root{
-    --primary-orange: #ff6a00; /* main orange */
+:root {
+    --primary-orange: #ff6a00;
+    /* main orange */
     --primary-orange-dark: #e55a00;
-    --accent-yellow: #ffd166; /* warm yellow */
-    --muted-dark: #3a2c20; /* for text on yellow/orange */
+    --accent-yellow: #ffd166;
+    /* warm yellow */
+    --muted-dark: #3a2c20;
+    /* for text on yellow/orange */
     --soft-bg: #fff8f2;
 }
 
 /* Global typography & smoothing */
-html,body {
+html,
+body {
     font-family: "Quicksand", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -22,7 +26,11 @@ html,body {
 }
 
 /* Make everything more rounded and soft */
-* { transition: all 0.18s ease; border-radius: inherit; box-sizing: border-box; }
+* {
+    transition: all 0.18s ease;
+    border-radius: inherit;
+    box-sizing: border-box;
+}
 
 /* Navbar (use orange) - softer corners */
 .navbar {
@@ -30,12 +38,12 @@ html,body {
     border-radius: 14px;
     padding: .5rem 1rem;
     margin: .5rem;
-    box-shadow: 0 8px 22px rgba(230,100,10,0.08);
+    box-shadow: 0 8px 22px rgba(230, 100, 10, 0.08);
 }
 
 /* Brand rounded background */
 .navbar-brand {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255, 255, 255, 0.06);
     padding: .15rem .5rem;
     border-radius: 12px;
     display: inline-flex;
@@ -50,27 +58,33 @@ html,body {
     padding: .45rem .7rem;
     border-radius: 999px;
 }
+
 .navbar-nav .nav-link:hover {
     color: var(--muted-dark);
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     transform: translateY(-2px);
 }
 
 /* Slider images rounded */
 .carousel-item img {
     border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
 /* Modals more rounded and cute */
 .modal-content {
     background-color: #ffffff;
     border-radius: 20px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
     border-top: 8px solid var(--primary-orange);
     overflow: hidden;
 }
-.modal-header, .modal-footer { border: none; }
+
+.modal-header,
+.modal-footer {
+    border: none;
+}
+
 .modal-title {
     color: var(--muted-dark);
     font-weight: 700;
@@ -81,16 +95,22 @@ html,body {
 .card {
     background: linear-gradient(180deg, #ffffff, var(--soft-bg));
     border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(230,100,10,0.06);
-    transition: transform 0.28s cubic-bezier(.2,.9,.3,1), box-shadow .28s;
+    box-shadow: 0 10px 30px rgba(230, 100, 10, 0.06);
+    transition: transform 0.28s cubic-bezier(.2, .9, .3, 1), box-shadow .28s;
     align-items: center;
     align-content: center;
-    border-left: 8px solid rgba(255,209,102,0.95);
+    border-left: 8px solid rgba(255, 209, 102, 0.95);
     padding: 1rem;
 }
+
 .card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 18px 48px rgba(230,100,10,0.12);
+    box-shadow: 0 18px 48px rgba(230, 100, 10, 0.12);
+}
+
+.Tools:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 48px rgba(230, 100, 10, 0.12);
 }
 
 /* Card titles softer */
@@ -108,23 +128,27 @@ html,body {
     padding: .5rem .9rem;
     font-weight: 700;
     letter-spacing: .3px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
+
 .btn-primary {
     background-color: var(--primary-orange);
     border-color: var(--primary-orange);
     color: #fff;
 }
+
 .btn-primary:hover {
     background-color: var(--primary-orange-dark);
     border-color: var(--primary-orange-dark);
     transform: translateY(-3px);
 }
+
 .btn-outline-secondary {
     border-color: var(--accent-yellow);
     color: var(--muted-dark);
-    background: rgba(255,241,210,0.6);
+    background: rgba(255, 241, 210, 0.6);
 }
+
 .btn-outline-secondary:hover {
     background: var(--accent-yellow);
     color: var(--muted-dark);
@@ -135,15 +159,17 @@ html,body {
     width: 1.35rem;
     height: 1.35rem;
     border-radius: 6px;
-    border: 2px solid rgba(0,0,0,0.06);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.04) inset;
+    border: 2px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04) inset;
     transition: transform .15s ease, box-shadow .15s ease;
 }
+
 .form-check-input:checked {
     background: linear-gradient(90deg, var(--primary-orange), var(--accent-yellow));
     border-color: transparent;
     background-size: 200% 200%;
 }
+
 .form-check-label {
     margin-left: .6rem;
     font-weight: 600;
@@ -156,9 +182,9 @@ html,body {
     align-items: center;
     padding: .65rem;
     border-radius: 12px;
-    background: linear-gradient(90deg, rgba(255,250,240,0.6), rgba(255,250,240,0.4));
+    background: linear-gradient(90deg, rgba(255, 250, 240, 0.6), rgba(255, 250, 240, 0.4));
     margin-bottom: .5rem;
-    border: 1px solid rgba(230,110,20,0.06);
+    border: 1px solid rgba(230, 110, 20, 0.06);
 }
 
 /* Points badge round and cute */
@@ -169,19 +195,20 @@ html,body {
     background: linear-gradient(90deg, var(--primary-orange), var(--accent-yellow));
     color: #fff;
     font-weight: 700;
-    box-shadow: 0 8px 20px rgba(230,100,10,0.08);
+    box-shadow: 0 8px 20px rgba(230, 100, 10, 0.08);
 }
 
 /* Progress bar: pill and warm gradient */
 .progress {
-    background: rgba(0,0,0,0.04);
+    background: rgba(0, 0, 0, 0.04);
     border-radius: 999px;
     overflow: hidden;
 }
+
 .progress-bar.bg-info {
     background: linear-gradient(90deg, var(--primary-orange), var(--accent-yellow));
     border-radius: 999px;
-    box-shadow: 0 8px 24px rgba(230,100,10,0.08);
+    box-shadow: 0 8px 24px rgba(230, 100, 10, 0.08);
 }
 
 /* Badges, points */
@@ -200,12 +227,19 @@ html,body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.9);
+    background: rgba(255, 255, 255, 0.9);
     border-radius: 999px;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
 }
-.btn-floating i { color: var(--primary-orange); font-size: 1.2rem; }
-.btn-floating:hover { transform: translateY(-3px) scale(1.05); }
+
+.btn-floating i {
+    color: var(--primary-orange);
+    font-size: 1.2rem;
+}
+
+.btn-floating:hover {
+    transform: translateY(-3px) scale(1.05);
+}
 
 /* Bot to top button rounded bubble */
 #botToTopBtn {
@@ -219,33 +253,154 @@ html,body {
     background: #fff;
     padding: .55rem;
     border-radius: 999px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
-#botToTopBtn:hover{
+
+#botToTopBtn:hover {
     color: var(--accent-yellow);
     transform: translateY(-3px) scale(1.05);
 }
 
 /* Tiny text / captions more friendly */
-small, .text-muted {
+small,
+.text-muted {
     font-weight: 600;
-    color: rgba(50,34,26,0.7);
+    color: rgba(50, 34, 26, 0.7);
 }
 
 /* Utility accent classes */
-.text-accent { color: var(--accent-yellow) !important; font-weight: 700; }
-.bg-accent { background: var(--accent-yellow) !important; color: var(--muted-dark) !important; }
+.text-accent {
+    color: var(--accent-yellow) !important;
+    font-weight: 700;
+}
+
+.bg-accent {
+    background: var(--accent-yellow) !important;
+    color: var(--muted-dark) !important;
+}
 
 /* Make inputs, selects rounded */
-input.form-control, textarea.form-control, select.form-control {
+input.form-control,
+textarea.form-control,
+select.form-control {
     border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.04) inset;
-    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04) inset;
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* Responsive tweak for small screens */
 @media (max-width: 576px) {
-    .card { padding: .9rem; border-radius: 14px; }
-    .navbar { margin: .3rem; padding: .4rem; }
-    .points-badge { min-width: 48px; font-size: .92rem; }
+    .card {
+        padding: .9rem;
+        border-radius: 14px;
+    }
+
+    .navbar {
+        margin: .3rem;
+        padding: .4rem;
+    }
+
+    .points-badge {
+        min-width: 48px;
+        font-size: .92rem;
+    }
+}
+
+/* === Harmony Loop — Compact Toolbar (match orange/yellow theme) === */
+#hl-controls {
+    position: fixed;
+    left: 2%;
+    bottom: 16px;
+    z-index: 10000;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #0b1220, #0b1220);
+    border: 1px solid #334155;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .22);
+    display: flex;
+    /* xếp ngang các phần tử con */
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    /* không cho xuống dòng */
+    white-space: nowrap;
+    /* text trong nút không tự xuống dòng */
+}
+
+
+#hl-controls .btn {
+    margin-right: 6px;
+}
+
+#hl-controls .btn-primary {
+    background: var(--primary-orange);
+    border-color: var(--primary-orange);
+}
+
+#hl-controls .btn-primary:hover {
+    background: var(--primary-orange-dark);
+    border-color: var(--primary-orange-dark);
+}
+
+#hl-controls small {
+    color: rgba(255, 255, 255, .7);
+    font-weight: 600;
+}
+
+#hl-tools-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+#hl-btn-tools.btn.btn-outline-secondary {
+    background: rgba(255, 241, 210, 0.6);
+    border-color: var(--accent-yellow);
+    color: var(--muted-dark);
+}
+
+#hl-btn-tools.btn.btn-outline-secondary:hover {
+    background: var(--accent-yellow);
+    color: var(--muted-dark);
+}
+
+#hl-tools-menu {
+    position: absolute;
+    bottom: 44px;
+    left: 0;
+    display: none;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .12);
+    min-width: 320px;
+    max-width: min(92vw, 540px);
+    max-height: 280px;
+    overflow: auto;
+}
+
+#hl-tools-menu.show {
+    display: grid;
+    /* CHỈNH TAY độ rộng mỗi nút tại đây */
+    grid-template-columns: repeat(3, 140px);
+    /* ví dụ: 3 cột, mỗi cột 140px */
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Các modal dùng class .card để ăn style pastel/rounded đã có */
+.hl-modal-card {
+    background: #fff;
+    border-radius: 20px;
+    border-top: 8px solid var(--primary-orange);
+}
+
+#hl-tools-menu .btn {
+    width: 140px;
+    /* >>> chỉnh tay ở đây để nút không bị xuống dòng */
+    min-width: 140px;
+    height: 64px;
+    /* tuỳ chọn */
+    white-space: nowrap;
+    /* không cho text xuống dòng */
 }

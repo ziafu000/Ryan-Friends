@@ -47,7 +47,11 @@
     document.getElementById("hl-heatmap-close").onclick = () => overlay.style.display = "none";
 
     function render() {
-      const items = (window.SJL && SJL.series && SJL.series(28)) || [];
+      // chốt end = hôm nay local để tránh lệch UTC
+      const now = new Date();
+      const endYMD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const items = (window.SJL && SJL.series && SJL.series(28, { end: endYMD })) || [];
+
       grid.innerHTML = "";
       const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       for (const w of weekdays) grid.appendChild(el("div", { style: { textAlign: "center", fontSize: "11px", color: "#6b7280" } }, w));
@@ -64,8 +68,8 @@
 
       const last = items[items.length - 1] || {};
       const txt = last.hasData
-        ? (`Hôm nay (${last.date}): MSW=${SJL.minToHM(last.MSW)}, MSF=${SJL.minToHM(last.MSF)}, SJL=${Math.round(last.SJL)}’`)
-        : (`Hôm nay (${last.date || "—"}): thiếu dữ liệu (cần ≥1 ngày Work & ≥1 ngày Free trong 7 ngày).`);
+        ? (`Đến ngày (${last.date}): MSW=${SJL.minToHM(last.MSW)}, MSF=${SJL.minToHM(last.MSF)}, SJL=${Math.round(last.SJL)}’`)
+        : (`Đến ngày (${last.date || "—"}): thiếu dữ liệu (cần ≥1 ngày Work & ≥1 ngày Free trong 7 ngày).`);
       info.textContent = txt;
     }
     return { open() { overlay.style.display = "block"; render(); } };
@@ -82,4 +86,139 @@
   }
 
   window.addEventListener("DOMContentLoaded", () => setTimeout(ensureButtons, 170));
+})();
+
+// === SJL.series (local-date inclusive) + helpers ===
+(function () {
+  window.SJL = window.SJL || {};
+
+  function todayLocalDate() {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate()); // strip time to local midnight
+  }
+  function ymdLocal(d) {
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), da = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${da}`;
+  }
+  function addDays(d, k) { const t = new Date(d); t.setDate(t.getDate() + k); return t; }
+
+  function hmToMin(hm) { if (!hm) return null; const [H, M] = hm.split(':').map(Number); return ((H * 60 + M) % 1440 + 1440) % 1440; }
+  function durAcrossMidnight(bedMin, wakeMin) { let d = wakeMin - bedMin; if (d <= 0) d += 1440; return d; }
+  function midSleepHM(bed, wake) {
+    const b = hmToMin(bed), w = hmToMin(wake);
+    if (b == null || w == null) return null;
+    const mid = (b + Math.floor(durAcrossMidnight(b, w) / 2)) % 1440;
+    const H = String(Math.floor(mid / 60)).padStart(2, '0'), M = String(mid % 60).padStart(2, '0');
+    return `${H}:${M}`;
+  }
+  function avgMin(arr) { if (!arr.length) return null; const s = arr.reduce((a, b) => a + b, 0); return s / arr.length; }
+
+  // public helper (used by heatmap footer)
+  SJL.minToHM = function (min) {
+    if (min == null || isNaN(min)) return "";
+    const m = ((Math.round(min) % 1440) + 1440) % 1440;
+    const H = String(Math.floor(m / 60)).padStart(2, '0');
+    const M = String(m % 60).padStart(2, '0');
+    return `${H}:${M}`;
+  };
+
+
+  // Compute MSW/MSF/SDW/SDF/MSFsc/SJL on a 7-day window ending at dateStr (YYYY-MM-DD)
+  function compute7dFor(dateStr, logsByDate) {
+    // window: dateStr -6 ... dateStr
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const end = new Date(y, m - 1, d);
+    const days = [];
+    for (let i = 6; i >= 0; i--) days.push(ymdLocal(addDays(end, -i)));
+
+    const msWork = [], msFree = [], durWork = [], durFree = [];
+
+    for (const di of days) {
+      const recs = logsByDate.get(di) || [];
+      // dùng bản ghi đầu tiên hợp lệ của ngày
+      for (const r of recs) {
+        const ms = midSleepHM(r.bed, r.wake);
+        if (!ms) continue;
+        const msMin = hmToMin(ms);
+        const b = hmToMin(r.bed), w = hmToMin(r.wake);
+        const du = (b != null && w != null) ? durAcrossMidnight(b, w) : null;
+        if (r.kind === 'work') {
+          msWork.push(msMin);
+          if (du != null) durWork.push(du);
+        } else if (r.kind === 'free') {
+          msFree.push(msMin);
+          if (du != null) durFree.push(du);
+        }
+        break; // 1 log/ngày là đủ
+      }
+    }
+
+    const MSW = avgMin(msWork), MSF = avgMin(msFree);
+    const SDW = avgMin(durWork), SDF = avgMin(durFree);
+
+    let MSFsc = null, SJL = null;
+    if (MSW != null && MSF != null) {
+      const corr = (SDF != null && SDW != null) ? Math.max(0, SDF - SDW) / 2 : 0;
+      MSFsc = MSF - corr;
+      // khoảng cách tuần hoàn 24h → rút gọn về [0..720]
+      const diff = Math.abs(MSFsc - MSW) % 1440;
+      SJL = diff > 720 ? 1440 - diff : diff;
+    }
+
+    const hasData = (MSW != null && (MSF != null || MSFsc != null));
+    return { MSW, MSF, SDW, SDF, MSFsc, SJL, hasData };
+  }
+
+  function colorOf(sjlMin) {
+    if (sjlMin == null) return "#1f2937";           // no data
+    if (sjlMin <= 30) return "#16a34a";          // ≤30'
+    if (sjlMin <= 60) return "#22d3ee";          // 31–60'
+    if (sjlMin <= 120) return "#f59e0b";          // 61–120'
+    return "#ef4444";                              // >120'
+  }
+
+  // === Override/define SJL.series ===
+  // days: count (default 28); opts.end: string "YYYY-MM-DD" or Date — inclusive
+  SJL.series = function (days = 28, opts = {}) {
+    const endD = (() => {
+      if (opts && opts.end) {
+        if (opts.end instanceof Date) return new Date(opts.end.getFullYear(), opts.end.getMonth(), opts.end.getDate());
+        // assume YYYY-MM-DD
+        const [y, m, d] = String(opts.end).split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+      return todayLocalDate();
+    })();
+
+    const startD = addDays(endD, -(days - 1));
+    // Build a quick index of logs by date string
+    const st = (window.HL && HL.getState) ? HL.getState() : JSON.parse(localStorage.getItem("hl_v1_state") || "null");
+    const logs = Array.isArray(st?.logs) ? st.logs : [];
+    const normLogs = logs.map(r => ({
+      date: r.date || "",
+      kind: (r.kind ? String(r.kind).toLowerCase() :
+        (r.day_type ? (String(r.day_type).toLowerCase().startsWith('w') ? 'work' : 'free') : "")),
+      bed: r.bed || r.sleep_at || "",
+      wake: r.wake || r.wake_at || "",
+      note: r.note || ""
+    })).filter(r => r.date && (r.kind === 'work' || r.kind === 'free') && r.bed && r.wake);
+
+    const byDate = new Map();
+    for (const r of normLogs) {
+      if (!byDate.has(r.date)) byDate.set(r.date, []);
+      byDate.get(r.date).push(r);
+    }
+
+    const out = [];
+    for (let d = new Date(startD); d <= endD; d = addDays(d, 1)) {
+      const ymd = ymdLocal(d);
+      const win = compute7dFor(ymd, byDate);
+      out.push({
+        date: ymd,
+        ...win,
+        color: colorOf(win.SJL)
+      });
+    }
+    return out;
+  };
 })();

@@ -6,7 +6,8 @@ const ASSETS = [
   "./assets/icons/icon-512.png",
   "./index.css",
   "./index.html",
-  "./manifest.webmanifest"
+  "./manifest.webmanifest",
+  "./hl/sheets.sync.js"
 ];
 
 self.addEventListener("install", (e)=>{

@@ -90,11 +90,11 @@
   }
 
   function sjlColor(sjlMin) {
-    if (sjlMin == null) return "#1f2937"; // gray
-    if (sjlMin <= 30) return "#16a34a"; // green ok
-    if (sjlMin <= 60) return "#22d3ee"; // cyan mild
-    if (sjlMin <= 120) return "#f59e0b"; // amber warn
-    return "#ef4444"; // red
+    if (sjlMin == null) return "#1f2937";
+    if (sjlMin <= 90) return "#16a34a";
+    if (sjlMin <= 120) return "#22d3ee";
+    if (sjlMin <= 150) return "#f59e0b";
+    return "#ef4444";
   }
 
   function series(lastDays = 28) {

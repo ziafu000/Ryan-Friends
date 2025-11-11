@@ -1,4 +1,3 @@
-
 // hl/dashboard.js — Dashboard (SJL/PSQI/Grades) with CSS classes
 (function () {
     function el(tag, attrs = {}, children = []) {
@@ -16,30 +15,63 @@
     }
     function avg(a) { return (a && a.length) ? a.reduce((x, y) => x + y, 0) / a.length : null; }
 
+    // UPDATED: drawBarChart now shows exactly 2 columns:
+    // A = điểm 15 phút, B = điểm 1 tiết
     function drawBarChart(canvas, data) {
         const ctx = canvas.getContext("2d");
         const W = canvas.width, H = canvas.height;
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H);
+
+        // axes
         ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(40, 10); ctx.lineTo(40, H - 30); ctx.lineTo(W - 10, H - 30); ctx.stroke();
-        const maxVal = 10, bw = 24, gap = 26, groupGap = 40;
-        let x = 50; const colors = { A: "#ff6a00", B: "#ffd166" };
+
+        const maxVal = 10;
+        const bw = 80, gap = 60;
+        const startX = 80;
+        const colors = { A: "#ff6a00", B: "#ffd166" };
+
         ctx.font = "12px Quicksand, system-ui, Segoe UI, Roboto, Arial"; ctx.fillStyle = "#6b7280";
-        ctx.fillText("0", 20, H - 30); ctx.fillText("10", 12, 14);
-        (data.groups || []).forEach(g => {
-            const hA = (g.A != null ? (g.A / maxVal) * (H - 50) : 0);
-            ctx.fillStyle = colors.A; ctx.fillRect(x, (H - 30) - hA, bw, hA);
-            const hB = (g.B != null ? (g.B / maxVal) * (H - 50) : 0);
-            ctx.fillStyle = colors.B; ctx.fillRect(x + bw + gap / 2, (H - 30) - hB, bw, hB);
-            ctx.fillStyle = "#111827"; ctx.textAlign = "center"; ctx.fillText(g.name, x + bw, H - 10);
-            x += bw * 2 + gap + groupGap;
-        });
+        ctx.fillText("0", 20, H - 30); ctx.fillText(String(maxVal), 12, 14);
+
+        // compute heights (handle null -> 0 but mark with "—")
+        const valA = data.A != null ? data.A : null;
+        const valB = data.B != null ? data.B : null;
+        const hA = valA != null ? (valA / maxVal) * (H - 50) : 0;
+        const hB = valB != null ? (valB / maxVal) * (H - 50) : 0;
+
+        // A bar
+        let x = startX;
+        ctx.fillStyle = colors.A;
+        if (valA != null) ctx.fillRect(x, (H - 30) - hA, bw, hA);
+        else {
+            // draw empty placeholder outline
+            ctx.strokeStyle = "rgba(0,0,0,0.08)"; ctx.strokeRect(x, 20, bw, H - 50);
+            ctx.strokeStyle = "rgba(0,0,0,0.12)";
+        }
+        ctx.fillStyle = "#111827"; ctx.textAlign = "center";
+        ctx.fillText("A (15p)", x + bw / 2, H - 10);
+        ctx.fillText(valA != null ? Math.round(valA * 10) / 10 : "—", x + bw / 2, (H - 30) - hA - 6);
+
+        // B bar
+        x += bw + gap;
+        ctx.fillStyle = colors.B;
+        if (valB != null) ctx.fillRect(x, (H - 30) - hB, bw, hB);
+        else {
+            ctx.strokeStyle = "rgba(0,0,0,0.08)"; ctx.strokeRect(x, 20, bw, H - 50);
+            ctx.strokeStyle = "rgba(0,0,0,0.12)";
+        }
+        ctx.fillStyle = "#111827";
+        ctx.fillText("B (1 tiết)", x + bw / 2, H - 10);
+        ctx.fillText(valB != null ? Math.round(valB * 10) / 10 : "—", x + bw / 2, (H - 30) - hB - 6);
+
+        // legend (optional)
         ctx.textAlign = "left";
-        ctx.fillStyle = colors.A; ctx.fillRect(W - 150, 12, 10, 10);
-        ctx.fillStyle = "#111827"; ctx.fillText("A (7 ngày)", W - 135, 21);
-        ctx.fillStyle = colors.B; ctx.fillRect(W - 150, 28, 10, 10);
-        ctx.fillStyle = "#111827"; ctx.fillText("B (14 ngày)", W - 135, 37);
+        ctx.fillStyle = colors.A; ctx.fillRect(W - 200, 12, 10, 10);
+        ctx.fillStyle = "#111827"; ctx.fillText("A = 15 phút", W - 184, 21);
+        ctx.fillStyle = colors.B; ctx.fillRect(W - 200, 28, 10, 10);
+        ctx.fillStyle = "#111827"; ctx.fillText("B = 1 tiết", W - 184, 37);
     }
 
     function buildModal() {
@@ -81,8 +113,50 @@
 
         function render() {
             const s = HL.getState();
-            const todayISO = new Date().toISOString().slice(0, 10);
-            const win = (window.SJL && SJL.computeWindow) ? SJL.computeWindow(todayISO, s.logs || []) : { hasData: false };
+            const logs = s.logs || [];
+
+            // find the most recent date present in logs (robust to different field names/formats)
+            function extractISOFromValue(v) {
+            if (!v && v !== 0) return null;
+            if (v instanceof Date && !isNaN(v)) return v.toISOString().slice(0, 10);
+            if (typeof v === "number" && v > 1e8) { // possibly a timestamp (ms)
+                const d = new Date(v);
+                if (!isNaN(d)) return d.toISOString().slice(0, 10);
+            }
+            if (typeof v === "string") {
+                // prefer explicit YYYY-MM-DD
+                const m = v.match(/(\d{4}-\d{2}-\d{2})/);
+                if (m) return m[1];
+                const t = Date.parse(v);
+                if (!isNaN(t)) return new Date(t).toISOString().slice(0, 10);
+            }
+            return null;
+            }
+
+            let latestISO = null;
+            for (const log of logs) {
+            if (log && typeof log === "object") {
+                // common date-like keys
+                const keys = ["date", "day", "iso", "d", "start", "startDate", "timestamp", "ts"];
+                for (const k of keys) {
+                if (k in log) {
+                    const iso = extractISOFromValue(log[k]);
+                    if (iso && (!latestISO || iso > latestISO)) latestISO = iso;
+                }
+                }
+                // also scan all values as fallback
+                for (const v of Object.values(log)) {
+                const iso = extractISOFromValue(v);
+                if (iso && (!latestISO || iso > latestISO)) latestISO = iso;
+                }
+            } else {
+                const iso = extractISOFromValue(log);
+                if (iso && (!latestISO || iso > latestISO)) latestISO = iso;
+            }
+            }
+
+            const refISO = latestISO || new Date().toISOString().slice(0, 10);
+            const win = (window.SJL && SJL.computeWindow) ? SJL.computeWindow(refISO, logs) : { hasData: false };
 
             const sjlEl = document.getElementById("hl-card-sjl");
             if (win.hasData) { sjlEl.textContent = Math.round(win.SJL) + "’"; sjlEl.style.color = win.color || "#111827"; }
@@ -95,11 +169,10 @@
             document.getElementById("hl-card-psqi").textContent = pre + " → " + post;
 
             const g = s.grades || [];
-            const g15A = avg(g.filter(x => x.type === "15p" && x.phase === "A").map(x => x.score));
-            const g15B = avg(g.filter(x => x.type === "15p" && x.phase === "B").map(x => x.score));
-            const g1tA = avg(g.filter(x => x.type !== "15p" && x.phase === "A").map(x => x.score));
-            const g1tB = avg(g.filter(x => x.type !== "15p" && x.phase === "B").map(x => x.score));
-            drawBarChart(canvas, { groups: [{ name: "15p", A: g15A, B: g15B }, { name: "1 tiết", A: g1tA, B: g1tB }] });
+            // UPDATED: A = điểm 15 phút, B = điểm 1 tiết (tất cả các loại không phải "15p")
+            const avg15 = avg(g.filter(x => x.type === "15p").map(x => x.score));
+            const avg1t = avg(g.filter(x => x.type !== "15p").map(x => x.score));
+            drawBarChart(canvas, { A: avg15, B: avg1t });
         }
         return { open() { overlay.style.display = "block"; render(); } };
     }

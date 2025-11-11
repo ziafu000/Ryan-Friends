@@ -23,8 +23,8 @@
     const grid = el("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" } });
     const stuid = el("input", { id: "hl_set_id", placeholder: "Mã HS (VD: 11A1-03)" });
     const phaseA = el("input", { id: "hl_set_phaseA", type: "date" });
-    const psqiPre = el("input", { id: "hl_set_psqi_pre", type: "number", min: "0", max: "21", placeholder: "PSQI Pre (0–21)" });
-    const psqiPost = el("input", { id: "hl_set_psqi_post", type: "number", min: "0", max: "21", placeholder: "PSQI Post (0–21)" });
+    const psqiPre = el("input", { id: "hl_set_psqi_pre", type: "number", min: "0", max: "21", placeholder: "PSQI Pre" });
+    const psqiPost = el("input", { id: "hl_set_psqi_post", type: "number", min: "0", max: "21", placeholder: "PSQI Post" });
     const btnSave = el("button", { id: "hl_save_settings", class: "btn btn-primary" }, "Lưu");
 
     grid.append(

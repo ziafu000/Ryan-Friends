@@ -64,7 +64,7 @@
       const k = Number(kss.value);
       if (k >= 1 && k <= 9) { const kix = (s.kss || []).findIndex(x => x.date === rec.date); if (kix >= 0) s.kss[kix] = { date: rec.date, score: k }; else { s.kss = s.kss || []; s.kss.push({ date: rec.date, score: k }); } }
       recomputeStreaks(s); HL.setState(s);
-      msg.textContent = "Đã lưu log. Streak: " + (s.streaks?.days || 0) + " ngày.";
+      // msg.textContent = "Đã lưu log. Streak: " + (s.streaks?.days || 0) + " ngày.";
     };
 
     return { open() { overlay.style.display = "block"; if (typeof render === 'function') render(); } };

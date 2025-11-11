@@ -1,215 +1,208 @@
 {
-  "exported_at": "2025-11-06T07:30:14.440942Z",
+  "exported_at": "2025-11-10T13:38:13.279433Z",
   "key": "hl_v1_state",
   "state": {
     "profile": {
-      "id": "UserH",
-      "created": "2025-10-09"
+      "id": "11A1-23",
+      "created": "2025-10-11"
     },
     "settings": {
-      "phaseA_start": "2025-10-09",
-      "psqi_pre": 7,
+      "phaseA_start": "2025-10-11",
+      "psqi_pre": 8,
       "psqi_post": 6
     },
     "logs": [
       {
-        "date": "2025-10-09",
-        "kind": "work",
-        "bed": "23:08",
-        "wake": "05:27",
-        "note": ""
-      },
-      {
-        "date": "2025-10-10",
-        "kind": "work",
-        "bed": "23:22",
-        "wake": "05:25",
-        "note": ""
-      },
-      {
         "date": "2025-10-11",
         "kind": "free",
-        "bed": "00:29",
-        "wake": "07:10",
+        "bed": "02:59",
+        "wake": "10:20",
         "note": ""
       },
       {
         "date": "2025-10-12",
         "kind": "free",
-        "bed": "00:28",
-        "wake": "06:59",
-        "note": "hangout"
+        "bed": "01:24",
+        "wake": "09:41",
+        "note": ""
       },
       {
         "date": "2025-10-13",
         "kind": "work",
-        "bed": "23:21",
-        "wake": "05:30",
+        "bed": "23:07",
+        "wake": "06:10",
         "note": ""
       },
       {
         "date": "2025-10-14",
         "kind": "work",
-        "bed": "23:14",
-        "wake": "05:22",
+        "bed": "22:56",
+        "wake": "06:25",
         "note": ""
       },
       {
         "date": "2025-10-15",
         "kind": "work",
-        "bed": "23:03",
-        "wake": "05:27",
+        "bed": "22:24",
+        "wake": "06:13",
         "note": ""
       },
       {
         "date": "2025-10-16",
         "kind": "work",
-        "bed": "23:26",
-        "wake": "05:19",
+        "bed": "23:11",
+        "wake": "06:26",
         "note": ""
       },
       {
         "date": "2025-10-17",
         "kind": "work",
-        "bed": "23:23",
-        "wake": "05:22",
+        "bed": "22:49",
+        "wake": "06:20",
         "note": ""
       },
       {
         "date": "2025-10-18",
         "kind": "free",
-        "bed": "00:24",
-        "wake": "07:10",
+        "bed": "02:26",
+        "wake": "09:16",
         "note": ""
       },
       {
         "date": "2025-10-19",
         "kind": "free",
-        "bed": "23:29",
-        "wake": "07:03",
+        "bed": "01:12",
+        "wake": "08:40",
         "note": ""
       },
       {
         "date": "2025-10-20",
         "kind": "work",
-        "bed": "22:32",
-        "wake": "05:57",
+        "bed": "22:57",
+        "wake": "06:36",
         "note": ""
       },
       {
         "date": "2025-10-21",
         "kind": "work",
-        "bed": "22:23",
+        "bed": "22:26",
         "wake": "05:56",
         "note": ""
       },
       {
         "date": "2025-10-22",
         "kind": "work",
-        "bed": "22:21",
-        "wake": "05:46",
+        "bed": "22:33",
+        "wake": "06:09",
         "note": ""
       },
       {
         "date": "2025-10-23",
         "kind": "work",
-        "bed": "22:32",
-        "wake": "05:40",
+        "bed": "22:37",
+        "wake": "06:17",
         "note": ""
       },
       {
         "date": "2025-10-24",
         "kind": "work",
-        "bed": "22:27",
-        "wake": "05:35",
+        "bed": "23:03",
+        "wake": "06:15",
         "note": ""
       },
       {
         "date": "2025-10-25",
         "kind": "free",
-        "bed": "23:31",
-        "wake": "06:50",
+        "bed": "00:33",
+        "wake": "08:34",
         "note": ""
       },
       {
         "date": "2025-10-26",
         "kind": "free",
-        "bed": "23:37",
-        "wake": "06:55",
+        "bed": "01:04",
+        "wake": "08:57",
         "note": ""
       },
       {
         "date": "2025-10-27",
         "kind": "work",
-        "bed": "22:26",
-        "wake": "05:37",
+        "bed": "23:11",
+        "wake": "06:16",
         "note": ""
       },
       {
         "date": "2025-10-28",
         "kind": "work",
-        "bed": "22:22",
-        "wake": "05:33",
+        "bed": "22:55",
+        "wake": "06:00",
         "note": ""
       },
       {
         "date": "2025-10-29",
         "kind": "work",
-        "bed": "22:18",
-        "wake": "05:43",
+        "bed": "22:20",
+        "wake": "05:54",
         "note": ""
       },
       {
         "date": "2025-10-30",
         "kind": "work",
-        "bed": "22:32",
-        "wake": "05:53",
+        "bed": "22:56",
+        "wake": "06:16",
         "note": ""
       },
       {
         "date": "2025-10-31",
         "kind": "work",
-        "bed": "22:28",
-        "wake": "05:33",
-        "note": "late study"
+        "bed": "23:01",
+        "wake": "05:47",
+        "note": ""
       },
       {
         "date": "2025-11-01",
         "kind": "free",
-        "bed": "23:37",
-        "wake": "06:51",
+        "bed": "01:03",
+        "wake": "08:00",
         "note": ""
       },
       {
         "date": "2025-11-02",
         "kind": "free",
-        "bed": "23:31",
-        "wake": "06:56",
+        "bed": "00:10",
+        "wake": "07:49",
         "note": ""
       },
       {
         "date": "2025-11-03",
         "kind": "work",
-        "bed": "22:32",
-        "wake": "05:48",
+        "bed": "22:47",
+        "wake": "06:06",
         "note": ""
       },
       {
         "date": "2025-11-04",
         "kind": "work",
-        "bed": "22:37",
-        "wake": "05:37",
-        "note": "late study"
+        "bed": "22:15",
+        "wake": "05:24",
+        "note": "great sleep"
       },
       {
         "date": "2025-11-05",
         "kind": "work",
-        "bed": "22:24",
-        "wake": "05:39",
+        "bed": "22:53",
+        "wake": "06:07",
         "note": ""
       },
       {
         "date": "2025-11-06",
+        "kind": "work",
+        "bed": "22:56",
+        "wake": "05:50",
+        "note": ""
+      },
+      {
+        "date": "2025-11-07",
         "kind": "work",
         "bed": "22:40",
         "wake": "05:51",
@@ -218,66 +211,114 @@
     ],
     "grades": [
       {
-        "date": "2025-10-12",
+        "date": "2025-09-26",
+        "subject": "English",
+        "type": "15p",
+        "score": 6.5,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-11",
         "subject": "Math",
-        "type": "1tiet",
-        "score": 9.0,
+        "type": "15p",
+        "score": 7.0,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-13",
+        "subject": "Literature",
+        "type": "15p",
+        "score": 6.9,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-15",
+        "subject": "Physic",
+        "type": "15p",
+        "score": 7.1,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-16",
+        "subject": "Chemistry",
+        "type": "15p",
+        "score": 6.6,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-17",
+        "subject": "History",
+        "type": "15p",
+        "score": 7.6,
         "phase": "A"
       },
       {
         "date": "2025-10-27",
-        "subject": "English",
-        "type": "15p",
-        "score": 8.8,
-        "phase": "A"
-      },
-      {
-        "date": "2025-11-02",
-        "subject": "History",
-        "type": "15p",
-        "score": 6.4,
+        "subject": "Math",
+        "type": "1tiet",
+        "score": 8.2,
         "phase": "B"
       },
       {
-        "date": "2025-11-05",
-        "subject": "History",
-        "type": "15p",
+        "date": "2025-10-29",
+        "subject": "Physic",
+        "type": "1tiet",
+        "score": 8.2,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-30",
+        "subject": "Chemistry",
+        "type": "1tiet",
         "score": 7.6,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-30",
+        "subject": "Literature",
+        "type": "1tiet",
+        "score": 7.6,
+        "phase": "B"
+      },
+      {
+        "date": "2025-11-04",
+        "subject": "English",
+        "type": "1tiet",
+        "score": 7.1,
+        "phase": "B"
+      },
+      {
+        "date": "2025-11-06",
+        "subject": "History",
+        "type": "1tiet",
+        "score": 8.5,
         "phase": "B"
       }
     ],
     "kss": [
       {
-        "date": "2025-10-09",
-        "score": 6
-      },
-      {
-        "date": "2025-10-10",
-        "score": 8
-      },
-      {
         "date": "2025-10-11",
-        "score": 4
-      },
-      {
-        "date": "2025-10-12",
-        "score": 3
-      },
-      {
-        "date": "2025-10-13",
-        "score": 3
-      },
-      {
-        "date": "2025-10-14",
-        "score": 6
-      },
-      {
-        "date": "2025-10-15",
         "score": 5
       },
       {
+        "date": "2025-10-12",
+        "score": 6
+      },
+      {
+        "date": "2025-10-13",
+        "score": 5
+      },
+      {
+        "date": "2025-10-14",
+        "score": 7
+      },
+      {
+        "date": "2025-10-15",
+        "score": 7
+      },
+      {
         "date": "2025-10-16",
-        "score": 3
+        "score": 6
       },
       {
         "date": "2025-10-17",
@@ -285,11 +326,11 @@
       },
       {
         "date": "2025-10-18",
-        "score": 3
+        "score": 2
       },
       {
         "date": "2025-10-19",
-        "score": 5
+        "score": 6
       },
       {
         "date": "2025-10-20",
@@ -297,55 +338,55 @@
       },
       {
         "date": "2025-10-21",
-        "score": 8
+        "score": 7
       },
       {
         "date": "2025-10-22",
-        "score": 3
+        "score": 7
       },
       {
         "date": "2025-10-23",
-        "score": 4
+        "score": 7
       },
       {
         "date": "2025-10-24",
-        "score": 5
+        "score": 6
       },
       {
         "date": "2025-10-25",
-        "score": 3
+        "score": 6
       },
       {
         "date": "2025-10-26",
-        "score": 7
+        "score": 6
       },
       {
         "date": "2025-10-27",
-        "score": 3
+        "score": 6
       },
       {
         "date": "2025-10-28",
-        "score": 6
-      },
-      {
-        "date": "2025-10-29",
-        "score": 8
-      },
-      {
-        "date": "2025-10-30",
-        "score": 8
-      },
-      {
-        "date": "2025-10-31",
         "score": 7
       },
       {
+        "date": "2025-10-29",
+        "score": 7
+      },
+      {
+        "date": "2025-10-30",
+        "score": 7
+      },
+      {
+        "date": "2025-10-31",
+        "score": 4
+      },
+      {
         "date": "2025-11-01",
-        "score": 6
+        "score": 3
       },
       {
         "date": "2025-11-02",
-        "score": 5
+        "score": 7
       },
       {
         "date": "2025-11-03",
@@ -353,15 +394,19 @@
       },
       {
         "date": "2025-11-04",
-        "score": 3
+        "score": 7
       },
       {
         "date": "2025-11-05",
-        "score": 6
+        "score": 7
       },
       {
         "date": "2025-11-06",
-        "score": 6
+        "score": 5
+      },
+      {
+        "date": "2025-11-07",
+        "score": 7
       }
     ],
     "streaks": {

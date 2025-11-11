@@ -26,13 +26,13 @@
 
     const legend = el("div", { style: { display: "flex", gap: "10px", fontSize: "12px", marginBottom: "8px", alignItems: "center" } }, [
       el("span", { style: { background: "#16a34a", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "≤30’"),
+      el("span", {}, "≤90’"),
       el("span", { style: { background: "#22d3ee", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "31–60’"),
+      el("span", {}, "91–120’"),
       el("span", { style: { background: "#f59e0b", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "61–120’"),
+      el("span", {}, "121–150’"),
       el("span", { style: { background: "#ef4444", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, ">120’"),
+      el("span", {}, ">150’"),
       el("span", { style: { background: "#1f2937", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
       el("span", {}, "no data")
     ]);
@@ -170,11 +170,11 @@
   }
 
   function colorOf(sjlMin) {
-    if (sjlMin == null) return "#1f2937";           // no data
-    if (sjlMin <= 30) return "#16a34a";          // ≤30'
-    if (sjlMin <= 60) return "#22d3ee";          // 31–60'
-    if (sjlMin <= 120) return "#f59e0b";          // 61–120'
-    return "#ef4444";                              // >120'
+    if (sjlMin == null) return "#1f2937";
+    if (sjlMin <= 90) return "#16a34a";
+    if (sjlMin <= 120) return "#22d3ee";
+    if (sjlMin <= 150) return "#f59e0b";
+    return "#ef4444";
   }
 
   // === Override/define SJL.series ===

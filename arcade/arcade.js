@@ -68,30 +68,64 @@ export function onGameEnd(state, stats) {
 
 /** Kiểm tra các điều kiện khoá */
 export function checkGate(state) {
-  if ((state.streak | 0) < Number(state.cfg.arcade.unlock_streak) || 0) return "need_50_streak";
-  if ((state.tokens | 0) <= 0) return "no_token";
-  if (isCurfew(state.cfg.arcade.curfew)) return "curfew";
+  const need = Number(state?.cfg?.arcade?.unlock_streak ?? 50);
+  if ((state.streak | 0) < need) return 'need_unlock_streak'; // <— đổi mã khóa
 
-  const limMs = (Number(state.cfg.arcade.daily_limit_minutes) || 0) * 60 * 1000;
-  if (limMs > 0 && (state.daily_play_ms | 0) >= limMs) return "daily_limit";
+  if ((state.tokens | 0) <= 0) return 'no_token';
+  if (isCurfew(state?.cfg?.arcade?.curfew)) return 'curfew';
 
-  const cdMs = (Number(state.cfg.arcade.cooldown_minutes) || 0) * 60 * 1000;
-  if (cdMs > 0 && Date.now() - (state.last_play_ts | 0) < cdMs) return "cooldown";
+  const limMs = (Number(state?.cfg?.arcade?.daily_limit_minutes) || 0) * 60 * 1000;
+  if (limMs > 0 && (state.daily_play_ms | 0) >= limMs) return 'daily_limit';
+
+  const cdMs = (Number(state?.cfg?.arcade?.cooldown_minutes) || 0) * 60 * 1000;
+  if (cdMs > 0 && Date.now() - (state.last_play_ts | 0) < cdMs) return 'cooldown';
 
   return null;
 }
 
+
 /** Thông điệp hiển thị cho từng mã khoá */
-export function gateMessage(code) {
-  switch (code) {
-    case "need_50_streak": return "Khoá: cần đạt 50 streak để mở Harmony Arcade.";
-    case "no_token":       return "Khoá: hết token. Hãy hoàn thành Ritual để nhận token.";
-    case "curfew":         return "Khoá: đã quá giờ ngủ. Hẹn bạn ngày mai!";
-    case "daily_limit":    return "Khoá: bạn đã đạt giới hạn chơi 10 phút/ngày.";
-    case "cooldown":       return "Tạm khoá: chờ 3 phút trước khi chơi tiếp.";
-    default:               return "";
+export function gateMessage(code, state) {
+  const cfg = state?.cfg?.arcade || {};
+  const need = Number(cfg.unlock_streak ?? 50);
+
+  if (code === 'need_unlock_streak' || code === 'need_50_streak') {
+    return `Khoá: cần đạt ${need} streak để mở Harmony Arcade.`;
   }
+
+  if (code === 'no_token') {
+    return 'Khoá: hết token. Hãy hoàn thành Ritual để nhận token.';
+  }
+
+  if (code === 'curfew') {
+    const curf = cfg.curfew ? ` (${cfg.curfew})` : '';
+    return `Khoá: đã quá giờ ngủ${curf}. Hẹn bạn ngày mai!`;
+  }
+
+  if (code === 'daily_limit') {
+    const limMin = Number(cfg.daily_limit_minutes || 0);
+    const used = state?.daily_play_ms | 0;
+    return `Khoá: bạn đã đạt giới hạn ${limMin} phút/ngày (đã dùng ${formatMs(used)}).`;
+  }
+
+  if (code === 'cooldown') {
+    const cdMs = (Number(cfg.cooldown_minutes) || 0) * 60 * 1000;
+    const remain = Math.max(0, cdMs - (Date.now() - (state?.last_play_ts | 0)));
+    return `Tạm khoá: chờ ${formatMs(remain)} trước khi chơi tiếp.`;
+  }
+
+  return '';
 }
+
+// Helper hiển thị mm:ss (hoặc X phút)
+function formatMs(ms) {
+  const s = Math.ceil(ms / 1000);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  if (m >= 1) return `${m}:${String(sec).padStart(2, '0')}`;
+  return `${sec}s`;
+}
+
 
 /** Ghi log ẩn danh vào localStorage để export */
 export function logEvent(event, props = {}) {

@@ -24,7 +24,7 @@
       <img src="img/Logo.png" alt="Logo" style="width:60px;">
     </a>
     <ul class="navbar-nav">
-      <li class="nav-item active">
+      <li class="nav-item">
         <a class="nav-link" href="index.html">Trang chủ</a>
       </li>
       <li class="nav-item">
@@ -35,7 +35,7 @@
         <a class="nav-link" href="PSQI.html">Tính PSQI</a>
       </li>
 
-      <li class="nav-item">
+      <li class="nav-item active">
         <a class="nav-link" href="arcade.html">Harmony Arcade</a>
       </li>
 
@@ -64,7 +64,7 @@
         <span class="badge-primary">Giờ ngủ: <span id="curfew">21:30</span></span>
       </div>
 
-      <p class="text-muted mt-2">Hoàn thành <b>Daily Ritual</b> để nhận token. Đủ <b>50 streak</b> sẽ mở <i>Harmony
+      <p class="text-muted mt-2">Hoàn thành <b>Daily Ritual</b> để nhận token. Đủ <b>9 streak</b> sẽ mở <i>Harmony
           Arcade</i>. Chơi ≤ <b>90s/ván</b>, cooldown <b>3 phút</b>, tối đa <b>10 phút/ngày</b>.</p>
 
       <div class="d-flex flex-wrap align-items-center" style="gap:8px;">
@@ -84,6 +84,18 @@
       <div class="d-flex justify-content-center">
         <canvas id="gg" width="360" height="640" aria-label="Khung trò chơi Dream Drift"></canvas>
       </div>
+      <!-- Điều khiển UI -->
+      <div class="d-flex justify-content-center mt-2" id="pad">
+        <div class="btn-group" role="group" aria-label="Điều khiển Dream Drift">
+          <button id="btnHoldUp" class="btn btn-info btn-lg px-4" type="button">
+            <i class="fa-solid fa-arrow-up"></i> Bay lên
+          </button>
+          <button id="btnHoldOff" class="btn btn-secondary btn-lg px-4" type="button">
+            <i class="fa-solid fa-arrow-down"></i> Hạ xuống
+          </button>
+        </div>
+      </div>
+
 
       <p id="gateMsg" class="text-accent text-center mt-2 mb-0"></p>
     </section>
@@ -159,7 +171,9 @@
       btnReplay: document.getElementById('btnReplay'),
       btnClose: document.getElementById('btnClose'),
       canvas: document.getElementById('gg'),
-      skipFx: document.getElementById('skipFx')
+      skipFx: document.getElementById('skipFx'),
+      btnHoldUp: document.getElementById('btnHoldUp'),
+      btnHoldOff: document.getElementById('btnHoldOff')
     };
 
     const state = await Arcade.init('./arcade/config.json');
@@ -171,7 +185,9 @@
       if (el.curfew) el.curfew.textContent = state.cfg.arcade.curfew;
       if (el.limit) el.limit.textContent = state.cfg.arcade.daily_limit_minutes.toString();
       const gate = Arcade.checkGate(state);
-      el.gateMsg.textContent = gate ? Arcade.gateMessage(gate) : 'Sẵn sàng chơi!';
+      el.gateMsg.textContent = gate
+        ? Arcade.gateMessage(gate, state)
+        : `Sẵn sàng chơi! (Token: ${state.tokens}/${state.cfg.arcade.token_cap})`;
       el.btnPlay.disabled = !!gate;
     }
     refreshUI();
@@ -190,6 +206,34 @@
       el.resultCard.hidden = false;
       refreshUI();
     }
+    // ====== Điều khiển bằng nút UI ======
+    const downOpts = { passive: false };
+
+    // giữ để bay lên
+    ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => {
+      el.btnHoldUp?.addEventListener(ev, e => {
+        e.preventDefault();
+        if (game) game.hold = true;
+      }, downOpts);
+    });
+    // thả ra mọi nơi thì dừng bay lên
+    ['pointerup', 'mouseup', 'touchend', 'touchcancel'].forEach(ev => {
+      window.addEventListener(ev, e => {
+        if (game) game.hold = false;
+      }, downOpts);
+    });
+
+    // nút "Hạ xuống" = ép thả (và có thể nudge nhẹ)
+    ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => {
+      el.btnHoldOff?.addEventListener(ev, e => {
+        e.preventDefault();
+        if (game) {
+          game.hold = false;
+          // (tuỳ chọn) nudge xuống nhanh hơn một chút:
+          // game.glider.vy += 0.6;
+        }
+      }, downOpts);
+    });
 
     let game;
     el.btnPlay.addEventListener('click', () => {

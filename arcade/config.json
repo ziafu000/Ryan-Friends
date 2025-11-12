@@ -1,6 +1,6 @@
 {
   "arcade": {
-    "unlock_streak": 50,
+    "unlock_streak": 9,
     "token_per_ritual": 1,
     "token_cap": 3,
     "curfew": "21:30",

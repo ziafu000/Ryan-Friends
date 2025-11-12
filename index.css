@@ -405,11 +405,3 @@ select.form-control {
     white-space: nowrap;
     /* không cho text xuống dòng */
 }
-
-/* Dream Drift canvas: tránh trình duyệt ăn gesture/scroll */
-#gg {
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-}

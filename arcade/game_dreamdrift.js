@@ -1,4 +1,4 @@
-// arcade/game_dreamdrift.js — Canvas 2D loop (fixed input)
+// arcade/game_dreamdrift.js — Canvas 2D loop (fixed multi-input)
 export class Game{
   constructor(canvas, cfg, { skipFx=false, onEnd }={}){
     this.C = canvas;
@@ -25,31 +25,21 @@ export class Game{
     const up   = (e)=>{ if(e && e.preventDefault) e.preventDefault(); this.hold = false; };
     const opts = { passive:false };
 
-    // Pointer Events
+    // Pointer / Mouse / Touch
     this.C.addEventListener('pointerdown', down, opts);
     window.addEventListener('pointerup',   up,   opts);
     window.addEventListener('pointercancel', up, opts);
 
-    // Mouse fallback
     this.C.addEventListener('mousedown', down);
     window.addEventListener('mouseup',   up);
 
-    // Touch fallback
     this.C.addEventListener('touchstart', down, opts);
     window.addEventListener('touchend',   up,   opts);
     window.addEventListener('touchcancel', up,  opts);
 
     // Keyboard
-    this._kd = (e)=>{ 
-      if(['Space','KeyW','ArrowUp'].includes(e.code)){ 
-        e.preventDefault(); this.hold = true; 
-      }
-    };
-    this._ku = (e)=>{ 
-      if(['Space','KeyW','ArrowUp'].includes(e.code)){ 
-        e.preventDefault(); this.hold = false; 
-      }
-    };
+    this._kd = (e)=>{ if(['Space','KeyW','ArrowUp'].includes(e.code)){ e.preventDefault(); this.hold = true; } };
+    this._ku = (e)=>{ if(['Space','KeyW','ArrowUp'].includes(e.code)){ e.preventDefault(); this.hold = false; } };
     window.addEventListener('keydown', this._kd);
     window.addEventListener('keyup',   this._ku);
   }
@@ -77,7 +67,7 @@ export class Game{
     this.timeLeft -= dt;
     if(this.timeLeft <= 0){ this.end(); return; }
 
-    // physics (không scale dt để cảm giác mượt hơn ở 60fps)
+    // physics
     this.glider.vy += this.G.gravity;
     if(this.hold) this.glider.vy -= this.G.lift;
     this.glider.y += this.glider.vy;
@@ -93,7 +83,7 @@ export class Game{
     this.stars.forEach(s=> s.x -= s.v);
     this.lights.forEach(l=> l.x -= l.v);
 
-    // collisions (stars add score/combo, lights reset combo and -1 score)
+    // collisions
     this.stars = this.stars.filter(s=>{
       if(s.x < -20) return false;
       const dx = this.glider.x - s.x, dy = this.glider.y - s.y;
@@ -130,7 +120,7 @@ export class Game{
     ctx.fillStyle = '#87a5ff'; this.lights.forEach(l=> ctx.fillRect(l.x,l.y,l.w,l.h));
     ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.arc(this.glider.x, this.glider.y, this.glider.r, 0, Math.PI*2); ctx.fill();
 
-    // HUD (font VN-compatible)
+    // HUD (Unicode VN)
     ctx.fillStyle = '#ffffff'; ctx.font = '16px "Times New Roman", serif';
     ctx.fillText(`Score: ${this.score}`, 12, 22);
     ctx.fillText(`Combo: ${this.combo}`, 12, 42);

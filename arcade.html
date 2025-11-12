@@ -82,7 +82,8 @@
           <kbd>Space</kbd>/<kbd>W</kbd>/<kbd>↑</kbd> để lượn lên; thả để hạ xuống.</small></p>
 
       <div class="d-flex justify-content-center">
-        <canvas id="gg" width="360" height="640" aria-label="Khung trò chơi Dream Drift"></canvas>
+        <canvas id="gg" width="360" height="640" aria-label="Khung trò chơi Dream Drift"
+          style="touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;"></canvas>
       </div>
       <!-- Điều khiển UI -->
       <div class="d-flex justify-content-center mt-2" id="pad">
@@ -156,6 +157,22 @@
     import { Game } from './arcade/game_dreamdrift.js';
     import { pickRewards } from './arcade/rewards.js';
 
+    // ==== helpers for ritual entitlement ====
+    function dateKey(d = new Date()) { return d.toISOString().slice(0, 10); }
+    function todayClaimKey() { return 'hl_ritual_claimed_' + dateKey(); }
+
+    function hasRitualDoneToday() {
+      try {
+        if (!window.HL || typeof HL.getState !== 'function') return false;
+        const s = HL.getState(); if (!s) return false;
+        const rec = (s.logs || []).find(x => x.date === dateKey());
+        const hasBoth = !!(rec && rec.bed && rec.wake);
+        const set = s.settings || {};
+        const hasPlan = !!(set.target_sleep || set.target_wake);
+        return hasBoth && hasPlan;
+      } catch (_) { return false; }
+    }
+
     const el = {
       streak: document.getElementById('streak'),
       tokens: document.getElementById('tokens'),
@@ -177,6 +194,8 @@
     };
 
     const state = await Arcade.init('./arcade/config.json');
+    // mở khóa = 9 streak
+    state.cfg.arcade.unlock_streak = 9;
 
     function refreshUI() {
       el.streak.textContent = state.streak.toString();
@@ -184,53 +203,62 @@
       el.tokenCap.textContent = state.cfg.arcade.token_cap.toString();
       if (el.curfew) el.curfew.textContent = state.cfg.arcade.curfew;
       if (el.limit) el.limit.textContent = state.cfg.arcade.daily_limit_minutes.toString();
+
       const gate = Arcade.checkGate(state);
+      // nếu bạn đang dùng arcade.js mới: gateMessage(gate, state); nếu bản cũ thì tham số 2 bị bỏ qua cũng không sao
       el.gateMsg.textContent = gate
         ? Arcade.gateMessage(gate, state)
         : `Sẵn sàng chơi! (Token: ${state.tokens}/${state.cfg.arcade.token_cap})`;
       el.btnPlay.disabled = !!gate;
+
+      // entitlement cho nút +1 Token
+      const entitled = hasRitualDoneToday();
+      const claimed = localStorage.getItem(todayClaimKey()) === '1';
+      const capReached = state.tokens >= state.cfg.arcade.token_cap;
+      el.btnRitual.disabled = !(entitled && !claimed && !capReached);
+      el.btnRitual.title = el.btnRitual.disabled
+        ? 'Hoàn thành Ritual (Wake + Bed + Planner) để nhận token — hoặc đã claim hôm nay.'
+        : 'Nhấn để nhận +1 Token';
     }
     refreshUI();
 
-    el.btnRitual.addEventListener('click', () => { Arcade.completeRitual(state); refreshUI(); });
+    // ====== Claim token (chỉ bật khi Ritual đủ điều kiện) ======
+    el.btnRitual.addEventListener('click', () => {
+      const entitled = hasRitualDoneToday();
+      const claimed = localStorage.getItem(todayClaimKey()) === '1';
+      if (!entitled || claimed) return;
+
+      Arcade.completeRitual(state);
+      localStorage.setItem(todayClaimKey(), '1');
+      refreshUI();
+    });
 
     function onGameEnd(stats) {
       Arcade.onGameEnd(state, stats);
       const drops = pickRewards(state.cfg.rewards.drops);
       const xp = state.cfg.rewards.calm_xp_per_run;
-      const body = [
+      el.resultBody.innerHTML = [
         `<p>Điểm: <b>${stats.score}</b> — Combo max: <b>${stats.comboMax}</b> — Thời lượng: <b>${Math.round(stats.duration_ms / 1000)}s</b></p>`,
         `<p>Calm XP +<b>${xp}</b> • Vật phẩm rơi: <b>${drops.map(d => d.id).join(', ') || '—'}</b></p>`
       ].join('');
-      el.resultBody.innerHTML = body;
       el.resultCard.hidden = false;
       refreshUI();
     }
-    // ====== Điều khiển bằng nút UI ======
+
+    // ====== Điều khiển bằng nút UI (giữ/thả) ======
     const downOpts = { passive: false };
-
-    // giữ để bay lên
     ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => {
-      el.btnHoldUp?.addEventListener(ev, e => {
-        e.preventDefault();
-        if (game) game.hold = true;
-      }, downOpts);
+      el.btnHoldUp?.addEventListener(ev, e => { e.preventDefault(); if (game) game.hold = true; }, downOpts);
     });
-    // thả ra mọi nơi thì dừng bay lên
     ['pointerup', 'mouseup', 'touchend', 'touchcancel'].forEach(ev => {
-      window.addEventListener(ev, e => {
-        if (game) game.hold = false;
-      }, downOpts);
+      window.addEventListener(ev, e => { if (game) game.hold = false; }, downOpts);
     });
-
-    // nút "Hạ xuống" = ép thả (và có thể nudge nhẹ)
     ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => {
       el.btnHoldOff?.addEventListener(ev, e => {
         e.preventDefault();
         if (game) {
           game.hold = false;
-          // (tuỳ chọn) nudge xuống nhanh hơn một chút:
-          // game.glider.vy += 0.6;
+          // tuỳ chọn: nudge xuống nhanh: game.glider.vy += 0.6;
         }
       }, downOpts);
     });
@@ -249,7 +277,11 @@
     el.btnReplay.addEventListener('click', () => { el.resultCard.hidden = true; el.btnPlay.click(); });
     el.btnClose.addEventListener('click', () => { el.resultCard.hidden = true; refreshUI(); });
     el.btnExport.addEventListener('click', () => Arcade.exportLogs());
+
+    // cập nhật countdown cooldown / entitlement mỗi giây
+    setInterval(refreshUI, 1000);
   </script>
+
 
   <i class="fa-solid fa-circle-arrow-up" onclick="botToTop()" id="botToTopBtn"></i>
   <script src="js/product.js"></script>
@@ -266,7 +298,6 @@
   <script src="hl/datalab.js"></script>
   <script src="hl/onboarding.js"></script>
   <script src="hl/sheets.sync.js"></script>
-  <script src="hl/ritual.autogrant.js"></script>
 
 
 </body>

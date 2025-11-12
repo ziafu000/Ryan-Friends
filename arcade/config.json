@@ -1,0 +1,52 @@
+{
+  "arcade": {
+    "unlock_streak": 50,
+    "token_per_ritual": 1,
+    "token_cap": 3,
+    "curfew": "21:30",
+    "daily_limit_minutes": 10,
+    "cooldown_minutes": 3
+  },
+  "dream_drift": {
+    "duration_ms": 65000,
+    "gravity": 0.18,
+    "lift": 0.28,
+    "star_rate_ms": 900,
+    "light_rate_ms": 1300,
+    "speed": 2.0,
+    "glider_radius": 18,
+    "star_radius": [
+      8,
+      10
+    ],
+    "light_size": [
+      24,
+      24
+    ]
+  },
+  "rewards": {
+    "calm_xp_per_run": 10,
+    "drops": [
+      {
+        "id": "sticker_breathe",
+        "rarity": "common",
+        "weight": 30
+      },
+      {
+        "id": "sticker_keychain",
+        "rarity": "common",
+        "weight": 25
+      },
+      {
+        "id": "bg_paper_night",
+        "rarity": "uncommon",
+        "weight": 15
+      },
+      {
+        "id": "frame_aurora",
+        "rarity": "rare",
+        "weight": 5
+      }
+    ]
+  }
+}

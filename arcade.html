@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ryan</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="img/Logo.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="assets/icons/icon-192.png">
+    <meta name="theme-color" content="#22d3ee">
+
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark mr-auto ml-auto">
+        <a class="navbar-brand" href="index.html">
+            <img src="img/Logo.png" alt="Logo" style="width:60px;">
+        </a>
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="index.html">Trang chủ</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="introduce.html">Nhiệm vụ hằng ngày</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="PSQI.html">Tính PSQI</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="arcade.html">Harmony Arcade</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="contact1.html">Liên hệ</a>
+            </li>
+        </ul>
+        <!-- <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginModal">Đăng nhập</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#registerModal">Đăng ký</a>
+            </li>
+        </ul> -->
+    </nav>
+
+<main class="container mt-3 mb-3">
+  <section class="card p-3" aria-live="polite">
+    <h1 class="card-title mb-2">Harmony Arcade — <span class="badge-primary">Dream Drift</span></h1>
+
+    <div class="d-flex flex-wrap align-items-center" style="gap:8px;">
+      <span class="badge-primary">Streak: <span id="streak">0</span></span>
+      <span class="badge-primary">Play Tokens: <span id="tokens">0</span>/<span id="tokenCap">3</span></span>
+      <span class="badge-primary">Giới hạn: <span id="limit">10</span> phút/ngày</span>
+      <span class="badge-primary">Giờ ngủ: <span id="curfew">21:30</span></span>
+    </div>
+
+    <p class="text-muted mt-2">Hoàn thành <b>Daily Ritual</b> để nhận token. Đủ <b>50 streak</b> sẽ mở <i>Harmony Arcade</i>. Chơi ≤ <b>90s/ván</b>, cooldown <b>3 phút</b>, tối đa <b>10 phút/ngày</b>.</p>
+
+    <div class="d-flex flex-wrap align-items-center" style="gap:8px;">
+      <button id="btnRitual" class="btn btn-outline-secondary">+1 Token (Hoàn thành Ritual)</button>
+      <button id="btnPlay" class="btn btn-primary">Chơi</button>
+      <button id="btnExport" class="btn btn-outline-secondary">Xuất log</button>
+
+      <div class="form-check ml-2">
+        <input type="checkbox" class="form-check-input" id="skipFx">
+        <label class="form-check-label" for="skipFx">Bỏ qua hiệu ứng</label>
+      </div>
+    </div>
+
+    <p class="text-muted text-center mb-2"><small>Điều khiển: giữ chuột/ngón tay hoặc giữ <kbd>Space</kbd>/<kbd>W</kbd>/<kbd>↑</kbd> để lượn lên; thả để hạ xuống.</small></p>
+
+    <div class="d-flex justify-content-center">
+      <canvas id="gg" width="360" height="640" aria-label="Khung trò chơi Dream Drift"></canvas>
+    </div>
+
+    <p id="gateMsg" class="text-accent text-center mt-2 mb-0"></p>
+  </section>
+
+  <section id="resultCard" class="card hl-modal-card mt-3" hidden>
+    <div class="modal-header d-flex justify-content-between align-items-center">
+      <h2 class="modal-title mb-0" id="resultTitle">Kết quả</h2>
+    </div>
+    <div id="resultBody" class="modal-content" style="border:none; box-shadow:none; background:transparent; padding:12px 16px;"></div>
+    <div class="modal-footer d-flex" style="gap:8px;">
+      <button id="btnReplay" class="btn btn-primary">Chơi lại</button>
+      <button id="btnClose" class="btn btn-outline-secondary">Đóng</button>
+    </div>
+  </section>
+</main>
+
+<footer class="mt-3 bg-body-tertiary text-center p-3 bg-dark" style="background-color: rgba(0, 0, 0, 0.05);">
+        <!-- Grid container -->
+        <div class="container p-4 pb-0">
+            <!-- Section: Social media -->
+            <section class="mb-4">
+                <!-- Facebook -->
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #3b5998;"
+                    href="https://www.facebook.com/people/Little-Ryan/61581956524218" role="button"><i
+                        class="fab fa-facebook-f"></i></a>
+
+                <!-- Instagram -->
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #ac2bac;"
+                    href="https://www.instagram.com/lil_ryan091701?igsh=c2E2ZHprZHBjZGl4" role="button"><i
+                        class="fab fa-instagram"></i></a>
+
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #ed302f;"
+                    href="https://www.youtube.com/@lilryan4B" role="button"><i class="fab fa-youtube"></i></a>
+
+                <!-- Chat GPT -->
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #00acee;"
+                    href="https://chatgpt.com/g/g-68de0cbfdde88191aef354c4a1e4a6e1-mental-coach-from-btx-hs-by-minh-phu"
+                    role="button"><i class="fa-solid fa-robot"></i></a>
+
+                <!-- Book -->
+                <a data-mdb-ripple-init class="btn text-white btn-floating m-1" style="background-color: #7952b3;"
+                    href="https://heyzine.com/flip-book/8b687e4195.html" role="button"><i
+                        class="fa-solid fa-book"></i></a>
+            </section>
+
+
+        </div>
+        <!-- Grid container -->
+
+        <!-- Copyright -->
+        <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.173); color:aliceblue">
+            <a class="text-center" style="color:aqua" href="index.html">Ryan.com</a>
+        </div>
+        <!-- Copyright -->
+    </footer>
+<script type="module">
+  import * as Arcade from './arcade/arcade.js';
+  import { Game } from './arcade/game_dreamdrift.js';
+  import { pickRewards } from './arcade/rewards.js';
+
+  const el = {
+    streak: document.getElementById('streak'),
+    tokens: document.getElementById('tokens'),
+    tokenCap: document.getElementById('tokenCap'),
+    btnRitual: document.getElementById('btnRitual'),
+    btnPlay: document.getElementById('btnPlay'),
+    btnExport: document.getElementById('btnExport'),
+    gateMsg: document.getElementById('gateMsg'),
+    curfew: document.getElementById('curfew'),
+    limit: document.getElementById('limit'),
+    resultCard: document.getElementById('resultCard'),
+    resultBody: document.getElementById('resultBody'),
+    btnReplay: document.getElementById('btnReplay'),
+    btnClose: document.getElementById('btnClose'),
+    canvas: document.getElementById('gg'),
+    skipFx: document.getElementById('skipFx')
+  };
+
+  const state = await Arcade.init('./arcade/config.json');
+
+  function refreshUI(){
+    el.streak.textContent = state.streak.toString();
+    el.tokens.textContent = state.tokens.toString();
+    el.tokenCap.textContent = state.cfg.arcade.token_cap.toString();
+    if(el.curfew) el.curfew.textContent = state.cfg.arcade.curfew;
+    if(el.limit) el.limit.textContent = state.cfg.arcade.daily_limit_minutes.toString();
+    const gate = Arcade.checkGate(state);
+    el.gateMsg.textContent = gate ? Arcade.gateMessage(gate) : 'Sẵn sàng chơi!';
+    el.btnPlay.disabled = !!gate;
+  }
+  refreshUI();
+
+  el.btnRitual.addEventListener('click', ()=>{ Arcade.completeRitual(state); refreshUI(); });
+
+  function onGameEnd(stats){
+    Arcade.onGameEnd(state, stats);
+    const drops = pickRewards(state.cfg.rewards.drops);
+    const xp = state.cfg.rewards.calm_xp_per_run;
+    const body = [
+      `<p>Điểm: <b>${stats.score}</b> — Combo max: <b>${stats.comboMax}</b> — Thời lượng: <b>${Math.round(stats.duration_ms/1000)}s</b></p>`,
+      `<p>Calm XP +<b>${xp}</b> • Vật phẩm rơi: <b>${drops.map(d=>d.id).join(', ') || '—'}</b></p>`
+    ].join('');
+    el.resultBody.innerHTML = body;
+    el.resultCard.hidden = false;
+    refreshUI();
+  }
+
+  let game;
+  el.btnPlay.addEventListener('click', ()=>{
+    const gate = Arcade.checkGate(state);
+    if(gate){ Arcade.logEvent('arcade_locked', { reason: gate }); refreshUI(); return; }
+    Arcade.consumeToken(state);
+    refreshUI();
+    game = new Game(el.canvas, state.cfg.dream_drift, { skipFx: el.skipFx.checked, onEnd: onGameEnd });
+    Arcade.logEvent('game_start', { game_id: 'dream_drift' });
+    game.start();
+  });
+
+  el.btnReplay.addEventListener('click', ()=>{ el.resultCard.hidden = true; el.btnPlay.click(); });
+  el.btnClose.addEventListener('click', ()=>{ el.resultCard.hidden = true; refreshUI(); });
+  el.btnExport.addEventListener('click', ()=>Arcade.exportLogs());
+</script>
+</body>
+</html>

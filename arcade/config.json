@@ -11,9 +11,9 @@
     "duration_ms": 65000,
     "gravity": 0.18,
     "lift": 0.28,
-    "star_rate_ms": 900,
-    "light_rate_ms": 1300,
-    "speed": 2.0,
+    "star_rate_ms": 700,
+    "light_rate_ms": 1000,
+    "speed": 2.2,
     "glider_radius": 18,
     "star_radius": [
       8,

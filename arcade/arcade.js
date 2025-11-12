@@ -68,7 +68,7 @@ export function onGameEnd(state, stats) {
 
 /** Kiểm tra các điều kiện khoá */
 export function checkGate(state) {
-  const need = Number(state?.cfg?.arcade?.unlock_streak ?? 50);
+  const need = Number(state?.cfg?.arcade?.unlock_streak ?? 9);
   if ((state.streak | 0) < need) return 'need_unlock_streak'; // <— đổi mã khóa
 
   if ((state.tokens | 0) <= 0) return 'no_token';
@@ -87,9 +87,9 @@ export function checkGate(state) {
 /** Thông điệp hiển thị cho từng mã khoá */
 export function gateMessage(code, state) {
   const cfg = state?.cfg?.arcade || {};
-  const need = Number(cfg.unlock_streak ?? 50);
+  const need = Number(cfg.unlock_streak ?? 9);
 
-  if (code === 'need_unlock_streak' || code === 'need_50_streak') {
+  if (code === 'need_unlock_streak' || code === 'need_9_streak') {
     return `Khoá: cần đạt ${need} streak để mở Harmony Arcade.`;
   }
 

@@ -148,7 +148,7 @@ export class Game{
     ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.arc(this.glider.x, this.glider.y, this.glider.r, 0, Math.PI*2); ctx.fill();
 
     // ===== HUD — phóng to chữ =====
-    const fs = Math.max(26, Math.round(w * 0.065)); // ~8.5% chiều rộng (VD w=360 → ~31px)
+    const fs = Math.max(20, Math.round(w * 0.075)); // ~8.5% chiều rộng (VD w=360 → ~31px)
     ctx.fillStyle = '#ffffff'; ctx.font = `${fs}px "Times New Roman", serif`;
     ctx.fillText(`Score: ${this.score}`, 12, 18 + fs*0.1);
     ctx.fillText(`Combo: ${this.combo}`, 12, 18 + fs*0.1 + fs*1.15);

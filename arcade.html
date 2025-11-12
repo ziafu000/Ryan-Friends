@@ -169,7 +169,7 @@
     import { Game } from './arcade/game_dreamdrift.js';
     import { pickRewards } from './arcade/rewards.js';
 
-    /* ===== Utils Ritual & Date ===== */
+    /* ========= Ritual utils ========= */
     const dayKey = (d = new Date()) => d.toISOString().slice(0, 10);
     const claimKey = () => 'hl_ritual_claimed_' + dayKey();
     function hasRitualDoneToday() {
@@ -184,7 +184,7 @@
       } catch (_) { return false; }
     }
 
-    /* ===== Elements ===== */
+    /* ========= Elements ========= */
     const el = {
       streak: document.getElementById('streak'),
       tokens: document.getElementById('tokens'),
@@ -201,33 +201,29 @@
       btnClose: document.getElementById('btnClose'),
       canvas: document.getElementById('gg'),
       gameWrap: document.getElementById('gameWrap'),
-      zoneHold: document.getElementById('zoneHold'),
-      btnFS: document.getElementById('btnFS'),
-      skipFx: document.getElementById('skipFx'),
-      btnHoldUp: document.getElementById('btnHoldUp'),
-      btnHoldOff: document.getElementById('btnHoldOff')
+      zoneHold: document.getElementById('zoneHold'), // có/không đều OK
+      btnFS: document.getElementById('btnFS'),       // có/không đều OK
+      skipFx: document.getElementById('skipFx')
     };
 
-    /* ===== Init Arcade state (unlock = 9) ===== */
+    /* ========= Init ========= */
     const state = await Arcade.init('./arcade/config.json');
-    state.cfg.arcade.unlock_streak = 9; // mốc mở
+    state.cfg.arcade.unlock_streak = 9; // mở ở 9 streak
 
-    /* ===== Canvas scale: fit khung & DPR ===== */
+    /* ========= DPR-aware canvas ========= */
     function resizeCanvas() {
-      const wrap = el.gameWrap.querySelector('.game-stage');
-      const rect = wrap.getBoundingClientRect();
+      const stage = el.gameWrap?.querySelector('.game-stage') || el.canvas.parentElement || document.body;
+      const rect = stage.getBoundingClientRect();
       const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-      // Set kích thước pixel cho canvas
       el.canvas.width = Math.floor(rect.width * dpr);
       el.canvas.height = Math.floor(rect.height * dpr);
-      // scale context để vẽ theo CSS pixel
       const ctx = el.canvas.getContext('2d');
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // vẽ theo đơn vị CSS pixel
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    /* ===== UI Refresh ===== */
+    /* ========= UI refresh ========= */
     function refreshUI() {
       el.streak.textContent = state.streak.toString();
       el.tokens.textContent = state.tokens.toString();
@@ -236,11 +232,12 @@
       if (el.limit) el.limit.textContent = state.cfg.arcade.daily_limit_minutes.toString();
 
       const gate = Arcade.checkGate(state);
+      // nếu dùng arcade.js cũ, tham số 2 bị bỏ qua cũng không sao
       el.gateMsg.textContent = gate ? Arcade.gateMessage(gate, state)
         : `Sẵn sàng chơi! (Token: ${state.tokens}/${state.cfg.arcade.token_cap})`;
       el.btnPlay.disabled = !!gate;
 
-      // +1 Token: chỉ enable khi đủ ritual & chưa claim & chưa đạt cap
+      // +1 Token chỉ bật khi đủ ritual + chưa claim + chưa chạm trần
       const entitled = hasRitualDoneToday();
       const claimed = localStorage.getItem(claimKey()) === '1';
       const capReached = state.tokens >= state.cfg.arcade.token_cap;
@@ -251,7 +248,7 @@
     }
     refreshUI();
 
-    /* ===== Claim token ===== */
+    /* ========= Claim token ========= */
     el.btnRitual?.addEventListener('click', () => {
       const entitled = hasRitualDoneToday();
       const claimed = localStorage.getItem(claimKey()) === '1';
@@ -261,28 +258,27 @@
       refreshUI();
     });
 
-    /* ===== Game flow ===== */
+    /* ========= Game flow ========= */
     let game;
+    function onGameEnd(stats) {
+      Arcade.onGameEnd(state, stats);
+      const drops = pickRewards(state.cfg.rewards.drops);
+      const xp = state.cfg.rewards.calm_xp_per_run;
+      el.resultBody.innerHTML = [
+        `<p>Điểm: <b>${stats.score}</b> — Combo max: <b>${stats.comboMax}</b> — Thời lượng: <b>${Math.round(stats.duration_ms / 1000)}s</b></p>`,
+        `<p>Calm XP +<b>${xp}</b> • Vật phẩm rơi: <b>${drops.map(d => d.id).join(', ') || '—'}</b></p>`
+      ].join('');
+      el.resultCard.hidden = false;
+      refreshUI();
+    }
+
     function startGame() {
       const gate = Arcade.checkGate(state);
       if (gate) { Arcade.logEvent('arcade_locked', { reason: gate }); refreshUI(); return; }
       Arcade.consumeToken(state);
       refreshUI();
       resizeCanvas();
-      game = new Game(el.canvas, state.cfg.dream_drift, {
-        skipFx: el.skipFx?.checked,
-        onEnd: (stats) => {
-          Arcade.onGameEnd(state, stats);
-          const drops = pickRewards(state.cfg.rewards.drops);
-          const xp = state.cfg.rewards.calm_xp_per_run;
-          el.resultBody.innerHTML = [
-            `<p>Điểm: <b>${stats.score}</b> — Combo max: <b>${stats.comboMax}</b> — Thời lượng: <b>${Math.round(stats.duration_ms / 1000)}s</b></p>`,
-            `<p>Calm XP +<b>${xp}</b> • Vật phẩm rơi: <b>${drops.map(d => d.id).join(', ') || '—'}</b></p>`
-          ].join('');
-          el.resultCard.hidden = false;
-          refreshUI();
-        }
-      });
+      game = new Game(el.canvas, state.cfg.dream_drift, { skipFx: el.skipFx?.checked, onEnd: onGameEnd });
       Arcade.logEvent('game_start', { game_id: 'dream_drift' });
       game.start();
     }
@@ -292,43 +288,31 @@
     el.btnClose?.addEventListener('click', () => { el.resultCard.hidden = true; refreshUI(); });
     el.btnExport?.addEventListener('click', () => Arcade.exportLogs());
 
-    /* ===== Điều khiển: Overlay & Buttons & Keyboard ===== */
-    const opts = { passive: false };
-    const holdOn = e => { e?.preventDefault?.(); if (game) game.hold = true; };
-    const holdOff = e => { e?.preventDefault?.(); if (game) game.hold = false; };
+    /* ========= FOLLOW INPUT (chuột/ngón tay) ========= */
+    const moveOpts = { passive: false };
+    const feedMove = (e) => { e?.preventDefault?.(); if (game?.setTargetFromEvent) game.setTargetFromEvent(e); };
+    const feedTap = (e) => { e?.preventDefault?.(); if (game?.setTargetFromEvent) game.setTargetFromEvent(e); };
 
-    // Overlay toàn khung
-    el.zoneHold.addEventListener('pointerdown', holdOn, opts);
-    window.addEventListener('pointerup', holdOff, opts);
-    window.addEventListener('pointercancel', holdOff, opts);
+    // Canvas
+    el.canvas.addEventListener('pointermove', feedMove, moveOpts);
+    el.canvas.addEventListener('mousemove', feedMove);
+    el.canvas.addEventListener('touchmove', feedMove, moveOpts);
+    ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => el.canvas.addEventListener(ev, feedTap, moveOpts));
 
-    el.zoneHold.addEventListener('touchstart', holdOn, opts);
-    window.addEventListener('touchend', holdOff, opts);
-    window.addEventListener('touchcancel', holdOff, opts);
+    // Overlay (nếu có)
+    if (el.zoneHold) {
+      el.zoneHold.addEventListener('pointermove', feedMove, moveOpts);
+      el.zoneHold.addEventListener('touchmove', feedMove, moveOpts);
+      el.zoneHold.addEventListener('mousemove', feedMove);
+      ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => el.zoneHold.addEventListener(ev, feedTap, moveOpts));
+    }
 
-    el.zoneHold.addEventListener('mousedown', holdOn);
-    window.addEventListener('mouseup', holdOff);
-
-    // Nút UI
-    ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => el.btnHoldUp?.addEventListener(ev, holdOn, opts));
-    ['pointerup', 'mouseup', 'touchend', 'touchcancel'].forEach(ev => window.addEventListener(ev, holdOff, opts));
-    ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => el.btnHoldOff?.addEventListener(ev, holdOff, opts));
-
-    // Bàn phím
-    window.addEventListener('keydown', e => {
-      if (['Space', 'KeyW', 'ArrowUp'].includes(e.code)) { e.preventDefault(); if (game) game.hold = true; }
-    });
-    window.addEventListener('keyup', e => {
-      if (['Space', 'KeyW', 'ArrowUp'].includes(e.code)) { e.preventDefault(); if (game) game.hold = false; }
-    });
-
-    /* ===== Fullscreen ===== */
+    /* ========= Fullscreen (nếu có nút) ========= */
     el.btnFS?.addEventListener('click', async () => {
-      const elFS = el.gameWrap.querySelector('.game-stage');
+      const stage = el.gameWrap?.querySelector('.game-stage') || el.gameWrap || document.body;
       try {
         if (!document.fullscreenElement) {
-          await elFS.requestFullscreen?.();
-          // Khoá dọc nếu được hỗ trợ
+          await stage.requestFullscreen?.();
           if (screen.orientation?.lock) { try { await screen.orientation.lock('portrait'); } catch (_) { } }
           el.btnFS.innerHTML = '<i class="fa-solid fa-compress"></i>';
           el.btnFS.title = 'Thoát toàn màn hình';
@@ -338,15 +322,13 @@
           el.btnFS.title = 'Mở toàn màn hình';
         }
         setTimeout(resizeCanvas, 50);
-      } catch (e) {
-        // fallback: vẫn resize nếu không vào fullscreen được
-        resizeCanvas();
-      }
+      } catch (_) { resizeCanvas(); }
     });
 
-    // cập nhật gate/cooldown & entitlement mỗi giây
+    // cập nhật UI (cooldown/daily limit/entitlement) mỗi giây
     setInterval(refreshUI, 1000);
   </script>
+
 
 
 

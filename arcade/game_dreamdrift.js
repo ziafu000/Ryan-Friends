@@ -1,4 +1,6 @@
-// arcade/game_dreamdrift.js — Canvas 2D loop (fixed multi-input)
+// arcade/game_dreamdrift.js — Follow Pointer Edition
+// Quả cầu đi theo chuột/ngón tay (x & y). Không cần giữ phím nữa.
+
 export class Game{
   constructor(canvas, cfg, { skipFx=false, onEnd }={}){
     this.C = canvas;
@@ -7,7 +9,6 @@ export class Game{
     this.skipFx = skipFx;
     this.onEnd = onEnd || (()=>{});
     this.reset();
-    this._bind();
   }
 
   reset(){
@@ -15,42 +16,39 @@ export class Game{
     this.score = 0; this.combo = 0; this.comboMax = 0;
     this.stars = []; this.lights = [];
     this.timeLeft = this.cfg.duration_ms|0;
-    this.G = { gravity:this.cfg.gravity, lift:this.cfg.lift, starRate:this.cfg.star_rate_ms, lightRate:this.cfg.light_rate_ms, speed:this.cfg.speed };
-    this.glider = { x:80, y:this.C.height/2, vy:0, r:this.cfg.glider_radius };
-    this.hold = false;
+    this.G = { starRate:this.cfg.star_rate_ms, lightRate:this.cfg.light_rate_ms, speed:this.cfg.speed };
+    const w = this._w(), h = this._h();
+    this.glider = { x:w*0.2, y:h*0.5, r:this.cfg.glider_radius };
+    this.target = { x:w*0.2, y:h*0.5 }; // sẽ cập nhật theo chuột/drag
   }
 
-  _bind(){
-    const down = (e)=>{ if(e && e.preventDefault) e.preventDefault(); this.hold = true; };
-    const up   = (e)=>{ if(e && e.preventDefault) e.preventDefault(); this.hold = false; };
-    const opts = { passive:false };
+  // Kích thước vẽ theo "CSS pixel" (outer script đã setTransform theo DPR)
+  _w(){ return this.C.clientWidth  || this.C.width; }
+  _h(){ return this.C.clientHeight || this.C.height; }
 
-    // Pointer / Mouse / Touch
-    this.C.addEventListener('pointerdown', down, opts);
-    window.addEventListener('pointerup',   up,   opts);
-    window.addEventListener('pointercancel', up, opts);
-
-    this.C.addEventListener('mousedown', down);
-    window.addEventListener('mouseup',   up);
-
-    this.C.addEventListener('touchstart', down, opts);
-    window.addEventListener('touchend',   up,   opts);
-    window.addEventListener('touchcancel', up,  opts);
-
-    // Keyboard
-    this._kd = (e)=>{ if(['Space','KeyW','ArrowUp'].includes(e.code)){ e.preventDefault(); this.hold = true; } };
-    this._ku = (e)=>{ if(['Space','KeyW','ArrowUp'].includes(e.code)){ e.preventDefault(); this.hold = false; } };
-    window.addEventListener('keydown', this._kd);
-    window.addEventListener('keyup',   this._ku);
+  // Cho phép bên ngoài truyền vào clientX/clientY
+  setTargetFromEvent(e){
+    let cx, cy;
+    if (e.touches && e.touches[0]) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+    else { cx = e.clientX; cy = e.clientY; }
+    const rect = this.C.getBoundingClientRect();
+    this.setTarget(cx - rect.left, cy - rect.top);
+  }
+  setTarget(x,y){
+    const w=this._w(), h=this._h();
+    this.target.x = Math.max(0, Math.min(w, x));
+    this.target.y = Math.max(0, Math.min(h, y));
   }
 
   _spawnStar(ts){
+    const h = this._h(), w = this._w();
     const r = this.cfg.star_radius[0] + Math.random()*(this.cfg.star_radius[1]-this.cfg.star_radius[0]);
-    this.stars.push({ x:this.C.width+20, y:60+Math.random()*(this.C.height-120), r, v:this.G.speed*(.9+Math.random()*0.3) });
+    this.stars.push({ x:w+20, y:60+Math.random()*(h-120), r, v:this.G.speed*(.9+Math.random()*0.3) });
   }
   _spawnLight(ts){
-    const [w,h] = this.cfg.light_size;
-    this.lights.push({ x:this.C.width+w, y:70+Math.random()*(this.C.height-140), w, h, v:this.G.speed*(1.0+Math.random()*0.4) });
+    const h = this._h(), w = this._w();
+    const [lw,lh] = this.cfg.light_size;
+    this.lights.push({ x:w+lw, y:70+Math.random()*(h-140), w:lw, h:lh, v:this.G.speed*(1.0+Math.random()*0.4) });
   }
 
   start(){
@@ -67,19 +65,16 @@ export class Game{
     this.timeLeft -= dt;
     if(this.timeLeft <= 0){ this.end(); return; }
 
-    // physics
-    this.glider.vy += this.G.gravity;
-    if(this.hold) this.glider.vy -= this.G.lift;
-    this.glider.y += this.glider.vy;
-
-    // clamp
-    this.glider.y = Math.max(this.glider.r, Math.min(this.C.height - this.glider.r, this.glider.y));
+    // follow: lerp tới target để mượt
+    const k = 0.15; // hệ số bám
+    this.glider.x += (this.target.x - this.glider.x) * k;
+    this.glider.y += (this.target.y - this.glider.y) * k;
 
     // spawns
     if(ts % this.G.starRate  < 16) this._spawnStar(ts);
     if(ts % this.G.lightRate < 16) this._spawnLight(ts);
 
-    // move
+    // move obstacles
     this.stars.forEach(s=> s.x -= s.v);
     this.lights.forEach(l=> l.x -= l.v);
 
@@ -107,12 +102,13 @@ export class Game{
     });
 
     // draw
-    const ctx = this.ctx, C = this.C;
-    ctx.fillStyle = '#0e1320'; ctx.fillRect(0,0,C.width,C.height);
+    const ctx = this.ctx, C = this.C, w=this._w(), h=this._h();
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#0e1320'; ctx.fillRect(0,0,w,h);
 
     // parallax
     ctx.globalAlpha = 0.15; ctx.fillStyle = '#ffffff';
-    for(let i=0;i<6;i++){ ctx.fillRect(((ts/10)+(i*120))% (C.width+120) - 120, 100 + i*60, 80, 8); }
+    for(let i=0;i<6;i++){ ctx.fillRect(((ts/10)+(i*120))% (w+120) - 120, 100 + i*60, 80, 8); }
     ctx.globalAlpha = 1.0;
 
     // stars & lights & glider
@@ -120,7 +116,7 @@ export class Game{
     ctx.fillStyle = '#87a5ff'; this.lights.forEach(l=> ctx.fillRect(l.x,l.y,l.w,l.h));
     ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.arc(this.glider.x, this.glider.y, this.glider.r, 0, Math.PI*2); ctx.fill();
 
-    // HUD (Unicode VN)
+    // HUD
     ctx.fillStyle = '#ffffff'; ctx.font = '16px "Times New Roman", serif';
     ctx.fillText(`Score: ${this.score}`, 12, 22);
     ctx.fillText(`Combo: ${this.combo}`, 12, 42);
@@ -130,7 +126,7 @@ export class Game{
   }
 
   end(){
-    this.playing = false; this.hold = false;
+    this.playing = false;
     this.onEnd && this.onEnd({ score:this.score, comboMax:this.comboMax, duration_ms:this.cfg.duration_ms - Math.max(0, this.timeLeft) });
   }
 }

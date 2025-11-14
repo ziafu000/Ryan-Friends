@@ -267,7 +267,7 @@
       el.resultBody.innerHTML = [
         `<p>Điểm: <b>${stats.score}</b> — Combo max: <b>${stats.comboMax}</b> — Thời lượng: <b>${Math.round(stats.duration_ms / 1000)}s</b></p>`,
         `<p>Calm XP +<b>${xp}</b> • Vật phẩm rơi: <b>${drops.map(d => d.id).join(', ') || '—'}</b></p>`,
-        `<p>Liên Hệ Fanpage để nhận quà <a href="https://www.facebook.com/799741289893787" target="_blank" rel="noopener noreferrer">HL_Ryan</a></p>`
+        `<p>Liên Hệ <a href="https://www.facebook.com/799741289893787" target="_blank" rel="noopener noreferrer">HL_Ryan</a> để nhận quà</p>`
       ].join('');
       el.resultCard.hidden = false;
       refreshUI();

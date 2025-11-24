@@ -1,5 +1,6 @@
+// hl/sjl.heatmap.js — Heatmap 28 ngày (SJL_7d/phút) — LAST-DATA EDITION
+// - Luôn chốt "end" = ngày có log gần nhất (đủ bed + wake), fallback về hôm nay nếu chưa có log.
 
-// hl/sjl.heatmap.js — Heatmap 28 ngày (SJL_7d/phút) — styled
 (function () {
   function el(tag, attrs = {}, children = []) {
     const e = document.createElement(tag);
@@ -14,27 +15,22 @@
     });
     return e;
   }
+
   function buildModal() {
     const overlay = el("div", { id: "hl-heatmap-overlay", style: { position: "fixed", inset: "0", background: "rgba(0,0,0,.5)", display: "none", zIndex: "10000" } });
     const box = el("div", { class: "card hl-modal-card", style: { position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: "min(860px,96vw)", padding: "16px" } });
 
     const head = el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" } },
       [el("div", { style: { fontWeight: "700" } }, "SJL Heatmap — 28 ngày (SJL_7d/phút)"),
-      el("button", { id: "hl-heatmap-close", class: "btn btn-outline-secondary" }, "Đóng")
-      ]
+       el("button", { id: "hl-heatmap-close", class: "btn btn-outline-secondary" }, "Đóng")]
     );
 
     const legend = el("div", { style: { display: "flex", gap: "10px", fontSize: "12px", marginBottom: "8px", alignItems: "center" } }, [
-      el("span", { style: { background: "#16a34a", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "≤90’"),
-      el("span", { style: { background: "#22d3ee", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "91–120’"),
-      el("span", { style: { background: "#f59e0b", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "121–150’"),
-      el("span", { style: { background: "#ef4444", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, ">150’"),
-      el("span", { style: { background: "#1f2937", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }),
-      el("span", {}, "no data")
+      el("span", { style: { background: "#16a34a", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }), el("span", {}, "≤90’"),
+      el("span", { style: { background: "#22d3ee", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }), el("span", {}, "91–120’"),
+      el("span", { style: { background: "#f59e0b", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }), el("span", {}, "121–150’"),
+      el("span", { style: { background: "#ef4444", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }), el("span", {}, ">150’"),
+      el("span", { style: { background: "#1f2937", width: "14px", height: "14px", display: "inline-block", borderRadius: "3px" } }), el("span", {}, "no data")
     ]);
 
     const grid = el("div", { id: "hl-heatmap-grid", style: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "6px" } });
@@ -47,20 +43,33 @@
     document.getElementById("hl-heatmap-close").onclick = () => overlay.style.display = "none";
 
     function render() {
-      // chốt end = hôm nay local để tránh lệch UTC
+      // --- lấy ngày có dữ liệu gần nhất ---
+      const st = (window.HL && HL.getState && HL.getState()) || JSON.parse(localStorage.getItem('hl_v1_state') || 'null');
+      const lastDataISO = (Array.isArray(st?.logs) ? st.logs : [])
+        .filter(r => r && r.date && r.bed && r.wake) // chỉ nhận ngày có đủ mốc
+        .map(r => r.date).sort().slice(-1)[0];
+
+      // fallback: hôm nay (local)
       const now = new Date();
-      const endYMD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const todayYMD = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      const endYMD = lastDataISO || todayYMD;
+
+      // dựng chuỗi 28 ngày kết thúc ở endYMD
       const items = (window.SJL && SJL.series && SJL.series(28, { end: endYMD })) || [];
 
       grid.innerHTML = "";
       const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       for (const w of weekdays) grid.appendChild(el("div", { style: { textAlign: "center", fontSize: "11px", color: "#6b7280" } }, w));
+
       items.forEach(obj => {
         const color = obj.hasData ? (obj.color || "#1f2937") : "#1f2937";
         const sjlMin = obj.hasData ? (obj.SJL | 0) : null;
         const cell = el("div", {
           class: "card",
-          style: { width: "100%", aspectRatio: "1 / 1", background: color, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#0b1220", fontWeight: "700" }
+          style: { width: "100%", aspectRatio: "1 / 1", background: color, borderRadius: "8px",
+                   display: "flex", alignItems: "center", justifyContent: "center",
+                   fontSize: "11px", color: "#0b1220", fontWeight: "700" }
         }, sjlMin == null ? "" : String(Math.round(sjlMin)));
         cell.title = obj.date + (sjlMin == null ? " — no data" : (" — SJL_7d: " + sjlMin + "'"));
         grid.appendChild(cell);
@@ -88,7 +97,7 @@
   window.addEventListener("DOMContentLoaded", () => setTimeout(ensureButtons, 170));
 })();
 
-// === SJL.series (local-date inclusive) + helpers ===
+/* =================== SJL.series & helpers (LAST-DATA DEFAULT) =================== */
 (function () {
   window.SJL = window.SJL || {};
 
@@ -99,6 +108,10 @@
   function ymdLocal(d) {
     const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), da = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${da}`;
+  }
+  function ymdToDate(ymd) {
+    const [y, m, d] = String(ymd).split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
   }
   function addDays(d, k) { const t = new Date(d); t.setDate(t.getDate() + k); return t; }
 
@@ -113,7 +126,7 @@
   }
   function avgMin(arr) { if (!arr.length) return null; const s = arr.reduce((a, b) => a + b, 0); return s / arr.length; }
 
-  // public helper (used by heatmap footer)
+  // public helper
   SJL.minToHM = function (min) {
     if (min == null || isNaN(min)) return "";
     const m = ((Math.round(min) % 1440) + 1440) % 1440;
@@ -122,8 +135,7 @@
     return `${H}:${M}`;
   };
 
-
-  // Compute MSW/MSF/SDW/SDF/MSFsc/SJL on a 7-day window ending at dateStr (YYYY-MM-DD)
+  // Tính MSW/MSF... trên cửa sổ 7 ngày kết thúc ở dateStr (YYYY-MM-DD)
   function compute7dFor(dateStr, logsByDate) {
     // window: dateStr -6 ... dateStr
     const [y, m, d] = dateStr.split('-').map(Number);
@@ -177,32 +189,36 @@
     return "#ef4444";
   }
 
-  // === Override/define SJL.series ===
-  // days: count (default 28); opts.end: string "YYYY-MM-DD" or Date — inclusive
+  // === SJL.series (default end = last data date) ===
+  // days: count (default 28); opts.end: "YYYY-MM-DD" | Date — inclusive
   SJL.series = function (days = 28, opts = {}) {
-    const endD = (() => {
-      if (opts && opts.end) {
-        if (opts.end instanceof Date) return new Date(opts.end.getFullYear(), opts.end.getMonth(), opts.end.getDate());
-        // assume YYYY-MM-DD
-        const [y, m, d] = String(opts.end).split('-').map(Number);
-        return new Date(y, m - 1, d);
-      }
-      return todayLocalDate();
-    })();
-
-    const startD = addDays(endD, -(days - 1));
-    // Build a quick index of logs by date string
+    // Lấy state và chuẩn hóa log
     const st = (window.HL && HL.getState) ? HL.getState() : JSON.parse(localStorage.getItem("hl_v1_state") || "null");
     const logs = Array.isArray(st?.logs) ? st.logs : [];
     const normLogs = logs.map(r => ({
       date: r.date || "",
-      kind: (r.kind ? String(r.kind).toLowerCase() :
-        (r.day_type ? (String(r.day_type).toLowerCase().startsWith('w') ? 'work' : 'free') : "")),
+      kind: (r.kind ? String(r.kind).toLowerCase()
+            : (r.day_type ? (String(r.day_type).toLowerCase().startsWith('w') ? 'work' : 'free') : "")),
       bed: r.bed || r.sleep_at || "",
       wake: r.wake || r.wake_at || "",
       note: r.note || ""
     })).filter(r => r.date && (r.kind === 'work' || r.kind === 'free') && r.bed && r.wake);
 
+    // Ngày có dữ liệu gần nhất
+    const lastDataISO = normLogs.map(r => r.date).sort().slice(-1)[0];
+
+    // endD: ưu tiên opts.end; nếu không có → lastDataISO; nếu vẫn không có → hôm nay
+    const endD = (() => {
+      if (opts && opts.end) {
+        if (opts.end instanceof Date) return new Date(opts.end.getFullYear(), opts.end.getMonth(), opts.end.getDate());
+        return ymdToDate(String(opts.end));
+      }
+      return lastDataISO ? ymdToDate(lastDataISO) : todayLocalDate();
+    })();
+
+    const startD = addDays(endD, -(days - 1));
+
+    // index logs theo ngày
     const byDate = new Map();
     for (const r of normLogs) {
       if (!byDate.has(r.date)) byDate.set(r.date, []);
@@ -213,11 +229,7 @@
     for (let d = new Date(startD); d <= endD; d = addDays(d, 1)) {
       const ymd = ymdLocal(d);
       const win = compute7dFor(ymd, byDate);
-      out.push({
-        date: ymd,
-        ...win,
-        color: colorOf(win.SJL)
-      });
+      out.push({ date: ymd, ...win, color: colorOf(win.SJL) });
     }
     return out;
   };

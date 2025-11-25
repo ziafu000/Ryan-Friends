@@ -341,6 +341,11 @@
     el.canvas.addEventListener('pointermove', feedMove, moveOpts);
     el.canvas.addEventListener('mousemove', feedMove);
     el.canvas.addEventListener('touchmove', feedMove, moveOpts);
+    el.canvas.addEventListener('mousedown', () => game.startCharge());
+    el.canvas.addEventListener('mouseup', () => game.releaseDash());
+    el.canvas.addEventListener('touchstart', () => game.startCharge());
+    el.canvas.addEventListener('touchend', () => game.releaseDash());
+
     ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => el.canvas.addEventListener(ev, feedTap, moveOpts));
 
     // Overlay (nếu có)

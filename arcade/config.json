@@ -35,8 +35,8 @@
         60,
         80
       ],
-      "hp_base": 80,
-      "hp_growth": 12,
+      "hp_base": 36,
+      "hp_growth": 10,
       "radius": 44,
       "speed": 1.1,
       "score_bonus": 18,

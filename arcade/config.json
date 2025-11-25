@@ -27,7 +27,19 @@
     "streak_bonus_at3_pct": 5,
     "booster_duration_ms": 6000,
     "booster_chance": 0.18,
-    "heal_chance": 0.08
+    "heal_chance": 0.08,
+    "boss": {
+      "spawn_seconds": [
+        30,
+        65
+      ],
+      "hp_base": 20,
+      "hp_growth": 12,
+      "radius": 44,
+      "speed": 1.1,
+      "score_bonus": 18,
+      "damage_tick_ms": 180
+    }
   },
   "rewards": {
     "calm_xp_per_run": 10,

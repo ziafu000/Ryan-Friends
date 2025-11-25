@@ -1,36 +1,58 @@
-// arcade/game_dreamdrift.js — Ryan Reskin + Hearts + Waves + Power-ups
-// - Pointer-follow with acceleration (mượt)
-// - TOKEN tròn (score/booster/heal), OBSTACLE vuông (điện thoại/⚠)
-// - Hiệu ứng pop + điểm bay lên, rung + flash khi đụng
-// - Hệ tim (2–3), booster x2, wave khó dần, bonus theo streak
+// arcade/game_dreamdrift.js — Boss Waves Edition
+// - Follow pointer + acceleration
+// - Token (tròn): score/booster/heal; Obstacle (vuông)
+// - Hearts, Booster x2, Waves E/M/H
+// - BOSS: xuất hiện theo thời gian, bị trừ HP khi Main lướt xuyên qua nhiều lần; hạ Boss + nhiều điểm.
 
 export class Game {
   constructor(canvas, cfg, { skipFx = false, onEnd, startingHearts = 2, streakBonus = 1 } = {}) {
     this.C = canvas;
     this.ctx = canvas.getContext('2d');
-    this.cfg = cfg;
-    this.skipFx = skipFx;
+    if (!this.ctx) console.warn('Canvas 2D context not available');
+    this.cfg = cfg || {};
+    this.skipFx = !!skipFx;
     this.onEnd = onEnd || (() => { });
     this.startingHearts = Math.max(1, Number(startingHearts || 2));
     this.streakBonus = Number(streakBonus || 1);
+
+    // sprite nhân vật (tùy chọn)
+    this.skin = null; this.skinReady = false;
+    const skinUrl = (this.cfg && this.cfg.main_skin) || null;
+    if (skinUrl) {
+      const img = new Image();
+      img.onload = () => { this.skin = img; this.skinReady = true; };
+      img.onerror = () => console.warn('Main skin load failed:', skinUrl);
+      img.src = skinUrl;
+    }
+
+    // sprite boss (tùy chọn)
+    this.bossSkin = null; this.bossSkinReady = false;
+    const bossSkin = (this.cfg.boss && this.cfg.boss.skin) || null;
+    if (bossSkin) {
+      const img2 = new Image();
+      img2.onload = () => { this.bossSkin = img2; this.bossSkinReady = true; };
+      img2.onerror = () => console.warn('Boss skin load failed:', bossSkin);
+      img2.src = bossSkin;
+    }
+
     this.reset();
   }
 
   reset() {
     this.playing = false;
-    this.t0 = 0;               // raf timestamp
-    this.elapsed = 0;          // ms elapsed
+    this.t0 = 0; this.elapsed = 0;
     this.score = 0; this.combo = 0; this.comboMax = 0;
 
     // Entities
-    this.tokens = [];          // tròn: score/booster/heal
-    this.blocks = [];          // vuông: obstacle
-    this.floaters = [];        // text bay lên
-    this.flash = 0;            // flash khi đụng
-    this.hitCooldown = 0;      // invul sau khi trúng
+    this.tokens = [];
+    this.blocks = [];
+    this.floaters = [];
+    this.flash = 0;
+    this.hitCooldown = 0;
 
     // Hearts
-    this.maxHearts = Math.max(this.cfg.max_hearts || 3, this.startingHearts);
+    const maxHeartsCfg = (this.cfg.max_hearts != null) ? Number(this.cfg.max_hearts) : 3;
+    this.maxHearts = Math.max(maxHeartsCfg, this.startingHearts);
     this.hearts = this.startingHearts;
 
     // Booster
@@ -45,8 +67,17 @@ export class Game {
 
     // Pointer-follow + acceleration
     const w = this._w(), h = this._h();
-    this.glider = { x: w * 0.2, y: h * 0.5, r: Number(this.cfg.glider_radius || 18), vx: 0, vy: 0 };
+    const rCfg = (this.cfg.glider_radius != null) ? Number(this.cfg.glider_radius) : 18;
+    this.glider = { x: w * 0.2, y: h * 0.5, r: rCfg, vx: 0, vy: 0 };
     this.target = { x: this.glider.x, y: this.glider.y };
+
+    // Boss system
+    const bcfg = this.cfg.boss || {};
+    this.bossPlan = Array.isArray(bcfg.spawn_seconds) ? bcfg.spawn_seconds.slice().sort((a, b) => a - b) : [];
+    this.bossIndex = 0;
+    this.boss = null;               // {x,y,r,hp,hpMax,vx,vy,alive}
+    this.bossDmgAcc = 0;            // damage tick accumulator
+    this.bossEmitAcc = 0;           // phát sinh chướng ngại (nhẹ) từ boss
   }
 
   _w() { return this.C.clientWidth || this.C.width; }
@@ -54,7 +85,7 @@ export class Game {
 
   setTargetFromEvent(e) {
     let cx, cy;
-    if (e.touches && e.touches[0]) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+    if (e && e.touches && e.touches[0]) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
     else { cx = e.clientX; cy = e.clientY; }
     const rect = this.C.getBoundingClientRect();
     this.setTarget(cx - rect.left, cy - rect.top);
@@ -65,7 +96,7 @@ export class Game {
     this.target.y = Math.max(0, Math.min(h, y));
   }
 
-  // === Waves: 0–20s easy, 20–50s medium, 50–90s hard
+  // Waves (giữ E/M/H) + khi có Boss, giảm spawn thường
   _wave() {
     const s = this.elapsed / 1000;
     if (s < 20) return { lv: 'E', speed: 1.0, rateMul: 1.0 };
@@ -75,33 +106,79 @@ export class Game {
 
   _spawnToken() {
     const h = this._h(), w = this._w();
-    const rMin = (this.cfg.star_radius?.[0] ?? 8), rMax = (this.cfg.star_radius?.[1] ?? 10);
+    const sr = Array.isArray(this.cfg.star_radius) ? this.cfg.star_radius : [8, 10];
+    const rMin = (sr[0] != null ? Number(sr[0]) : 8);
+    const rMax = (sr[1] != null ? Number(sr[1]) : 10);
     const r = rMin + Math.random() * (rMax - rMin);
     const y = 60 + Math.random() * (h - 120);
-
-    // loại token
-    const pHeal = Number(this.cfg.heal_chance || 0.08);
-    const pBoost = Number(this.cfg.booster_chance || 0.18);
+    const pHeal = Number(this.cfg.heal_chance != null ? this.cfg.heal_chance : 0.08);
+    const pBoost = Number(this.cfg.booster_chance != null ? this.cfg.booster_chance : 0.18);
     const roll = Math.random();
-    let kind = 'score';
-    if (roll < pHeal) kind = 'heal';
-    else if (roll < pHeal + pBoost) kind = 'booster';
-
-    // tốc độ đẩy sang trái
+    let kind = 'score'; if (roll < pHeal) kind = 'heal'; else if (roll < pHeal + pBoost) kind = 'booster';
     const v = this.baseSpeed * (0.95 + Math.random() * 0.35);
     this.tokens.push({ x: w + 20, y, r, v, kind });
   }
-
   _spawnBlock() {
     const h = this._h(), w = this._w();
-    const lw = this.cfg.light_size?.[0] ?? 26, lh = this.cfg.light_size?.[1] ?? 26;
+    const ls = Array.isArray(this.cfg.light_size) ? this.cfg.light_size : [26, 26];
+    const lw = (ls[0] != null ? Number(ls[0]) : 26);
+    const lh = (ls[1] != null ? Number(ls[1]) : 26);
     const y = 70 + Math.random() * (h - 140);
     const v = this.baseSpeed * (1.0 + Math.random() * 0.6);
     this.blocks.push({ x: w + lw, y, w: lw, h: lh, v });
   }
 
+  _spawnBoss() {
+    const w = this._w(), h = this._h();
+    const bcfg = this.cfg.boss || {};
+    const i = this.bossIndex; // boss thứ i
+    const hpBase = Number(bcfg.hp_base != null ? bcfg.hp_base : 20);
+    const hpGrow = Number(bcfg.hp_growth != null ? bcfg.hp_growth : 10);
+    const r = Number(bcfg.radius != null ? bcfg.radius : 44);
+    const speed = Number(bcfg.speed != null ? bcfg.speed : 1.1);
+
+    this.boss = {
+      x: w * 0.72, y: h * 0.5, r: r,
+      hp: hpBase + i * hpGrow, hpMax: hpBase + i * hpGrow,
+      vx: -speed, vy: 0,
+      alive: true
+    };
+    this.bossDmgAcc = 0;
+    this.bossEmitAcc = 0;
+    this._float(this.boss.x, this.boss.y - this.boss.r - 10, 'BOSS!', '#f472b6');
+  }
+
+  _moveBoss(dt) {
+    if (!this.boss || !this.boss.alive) return;
+    const w = this._w(), h = this._h(), b = this.boss;
+    b.x += b.vx * dt * 0.06; // tốc độ phụ thuộc dt
+    // va biên → bật lại
+    if (b.x < w * 0.28) { b.x = w * 0.28; b.vx = Math.abs(b.vx); }
+    if (b.x > w * 0.90) { b.x = w * 0.90; b.vx = -Math.abs(b.vx); }
+    // lượn nhẹ theo sin theo trục y
+    b.y = h * 0.5 + Math.sin(this.elapsed / 600) * (h * 0.22);
+  }
+
+  _bossEmit(dt, speedMul) {
+    // Boss thi thoảng “nhả” chướng ngại nhỏ để tăng áp lực
+    if (!this.boss || !this.boss.alive) return;
+    this.bossEmitAcc += dt;
+    if (this.bossEmitAcc >= 700) { // mỗi ~0.7s
+      this.bossEmitAcc -= 700;
+      const b = this.boss, sz = 20 + Math.random() * 12;
+      const v = this.baseSpeed * (1.4 + Math.random() * 0.6);
+      this.blocks.push({ x: b.x - b.r - 10, y: b.y + (Math.random() * b.r - b.r / 2), w: sz, h: sz, v });
+    }
+  }
+
+  _playerHitsBoss() {
+    if (!this.boss || !this.boss.alive) return false;
+    const bx = this.boss.x, by = this.boss.y, br = this.boss.r;
+    const dx = this.glider.x - bx, dy = this.glider.y - by;
+    return (dx * dx + dy * dy) <= (this.glider.r + br) * (this.glider.r + br);
+  }
+
   start() {
-    // duration: ưu tiên cfg.duration_ms, có thể random 45–90s sau này
     this.duration = Math.max(1000, Number(this.cfg.duration_ms || 65000));
     this.reset(); this.playing = true; this.t0 = 0; this.elapsed = 0;
     requestAnimationFrame(this._step.bind(this));
@@ -115,50 +192,60 @@ export class Game {
     this.elapsed += dt;
     if (this.elapsed >= this.duration) { this.end(); return; }
 
-    const wave = this._wave();                   // wave params
-    const { speed: speedMul, rateMul } = wave;   // tăng tốc khi lên wave
+    const wave = this._wave() || { lv: 'E', speed: 1, rateMul: 1 };
+    const speedMul = Number(wave.speed || 1);
+    let rateMul = Number(wave.rateMul || 1);
 
-    // follow with acceleration
-    const ACC = 0.22;   // tăng/giảm để mượt hơn hay “dính” hơn
-    const DAMP = 0.82;  // ma sát
+    // Follow + acceleration
+    const ACC = 0.22, DAMP = 0.82;
     const dx = (this.target.x - this.glider.x), dy = (this.target.y - this.glider.y);
     this.glider.vx = this.glider.vx * DAMP + dx * ACC;
     this.glider.vy = this.glider.vy * DAMP + dy * ACC;
-    this.glider.x += this.glider.vx;
-    this.glider.y += this.glider.vy;
+    this.glider.x += this.glider.vx; this.glider.y += this.glider.vy;
 
-    // keep in bounds
+    // Bounds
     const w = this._w(), h = this._h();
     this.glider.x = Math.max(this.glider.r, Math.min(w - this.glider.r, this.glider.x));
     this.glider.y = Math.max(this.glider.r, Math.min(h - this.glider.r, this.glider.y));
 
-    // spawn rates (theo wave)
-    const baseTokenRate = (this.cfg.star_rate_ms ?? 900) / rateMul;
-    const baseBlockRate = (this.cfg.light_rate_ms ?? 1300) / rateMul;
+    // Spawn Boss theo lịch
+    if (!this.boss || !this.boss.alive) {
+      if (this.bossIndex < this.bossPlan.length && (this.elapsed / 1000) >= this.bossPlan[this.bossIndex]) {
+        this._spawnBoss();
+        this.bossIndex++;
+      }
+    }
+
+    // Khi có Boss đang sống → giảm spawn thường
+    if (this.boss && this.boss.alive) rateMul *= 0.6;
+
+    // Spawn thường
+    const baseTokenRate = (this.cfg.star_rate_ms != null ? this.cfg.star_rate_ms : 900) / rateMul;
+    const baseBlockRate = (this.cfg.light_rate_ms != null ? this.cfg.light_rate_ms : 1300) / rateMul;
     this.accToken += dt; this.accBlock += dt;
     while (this.accToken >= baseTokenRate) { this._spawnToken(); this.accToken -= baseTokenRate; }
     while (this.accBlock >= baseBlockRate) { this._spawnBlock(); this.accBlock -= baseBlockRate; }
 
-    // move entities
+    // Move thường
     this.tokens.forEach(t => t.x -= t.v * speedMul);
     this.blocks.forEach(b => b.x -= b.v * speedMul);
 
-    // booster state
-    const now = this.elapsed; // ms from start
+    // Booster
+    const now = this.elapsed;
     const boosting = now < this.boostUntil;
-    const multStreak = this.streakBonus; // 1.05 nếu streak≥3, ngược lại 1
+    const multStreak = this.streakBonus;
     const multNow = (boosting ? 2 : 1) * multStreak;
 
-    // collisions: TOKENS
+    // TOKENS collisions
     this.tokens = this.tokens.filter(t => {
       if (t.x < -20) return false;
-      const dx = this.glider.x - t.x, dy = this.glider.y - t.y;
-      if (dx * dx + dy * dy <= (this.glider.r + t.r) * (this.glider.r + t.r)) {
+      const dx2 = this.glider.x - t.x, dy2 = this.glider.y - t.y;
+      if (dx2 * dx2 + dy2 * dy2 <= (this.glider.r + t.r) * (this.glider.r + t.r)) {
         if (t.kind === 'heal') {
           if (this.hearts < this.maxHearts) this.hearts++;
           this._float(t.x, t.y, '+1 ❤️', '#22c55e');
         } else if (t.kind === 'booster') {
-          const dur = Number(this.cfg.booster_duration_ms || 6000);
+          const dur = Number(this.cfg.booster_duration_ms != null ? this.cfg.booster_duration_ms : 6000);
           this.boostUntil = now + dur;
           this._float(t.x, t.y, 'x2 ⚡', '#c084fc');
         } else {
@@ -172,77 +259,109 @@ export class Game {
       return true;
     });
 
-    // collisions: BLOCKS
+    // BLOCKS collisions
     this.hitCooldown = Math.max(0, this.hitCooldown - dt);
     this.blocks = this.blocks.filter(b => {
       if (b.x < -30) return false;
       const cx = Math.max(b.x, Math.min(this.glider.x, b.x + b.w));
       const cy = Math.max(b.y, Math.min(this.glider.y, b.y + b.h));
-      const dx = this.glider.x - cx, dy = this.glider.y - cy;
-      if (dx * dx + dy * dy <= this.glider.r * this.glider.r) {
+      const dx3 = this.glider.x - cx, dy3 = this.glider.y - cy;
+      if (dx3 * dx3 + dy3 * dy3 <= this.glider.r * this.glider.r) {
         if (this.hitCooldown <= 0) {
           this.hearts = Math.max(0, this.hearts - 1);
           this.combo = 0;
-          this.flash = 0.7;             // flash đỏ
-          this.hitCooldown = 500;       // ms invul
+          this.flash = 0.7;
+          this.hitCooldown = 500;
           if (navigator.vibrate && !this.skipFx) navigator.vibrate([30, 60, 30]);
           if (this.hearts <= 0) { this.end(); return false; }
         }
-        return false; // bỏ block đã đụng
+        return false;
       }
       return true;
     });
 
-    // draw
-    const { ctx } = this;
-    ctx.clearRect(0, 0, w, h);
-    // background
-    ctx.fillStyle = '#0e1320'; ctx.fillRect(0, 0, w, h);
+    // BOSS logic
+    if (this.boss && this.boss.alive) {
+      this._moveBoss(dt);
+      this._bossEmit(dt, speedMul);
 
-    // parallax
+      // Damage khi lướt xuyên Boss
+      this.bossDmgAcc += dt;
+      const dmgTick = Number((this.cfg.boss && this.cfg.boss.damage_tick_ms) || 180);
+      if (this._playerHitsBoss() && this.bossDmgAcc >= dmgTick) {
+        this.bossDmgAcc = 0;
+        const dmg = boosting ? 2 : 1; // booster giúp hạ nhanh hơn
+        this.boss.hp = Math.max(0, this.boss.hp - dmg);
+        this._float(this.boss.x, this.boss.y - this.boss.r - 6, '-' + dmg, '#fca5a5');
+        if (navigator.vibrate && !this.skipFx) navigator.vibrate(8);
+
+        // Hạ Boss
+        if (this.boss.hp <= 0) {
+          this.boss.alive = false;
+          const bonus = Number((this.cfg.boss && this.cfg.boss.score_bonus) || 18);
+          this.score += bonus;
+          this._float(this.boss.x, this.boss.y, `+${bonus} BOSS`, '#f472b6');
+          this.flash = 0.8;
+        }
+      }
+    }
+
+    // DRAW (guard ctx)
+    const { ctx } = this;
+    const W = w, H = h;
+
+    // Background
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0e1320'; ctx.fillRect(0, 0, W, H);
     ctx.globalAlpha = 0.15; ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 6; i++) { ctx.fillRect(((ts / 10) + (i * 120)) % (w + 120) - 120, 100 + i * 60, 80, 8); }
+    for (let i = 0; i < 6; i++) { ctx.fillRect(((ts / 10) + (i * 120)) % (W + 120) - 120, 100 + i * 60, 80, 8); }
     ctx.globalAlpha = 1.0;
 
-    // TOKENS
+    // Tokens
     this.tokens.forEach(t => {
-      if (t.kind === 'heal') { ctx.fillStyle = '#22c55e'; }
-      else if (t.kind === 'booster') { ctx.fillStyle = '#c084fc'; }
-      else { ctx.fillStyle = '#ffd166'; }
+      ctx.fillStyle = (t.kind === 'heal') ? '#22c55e' : (t.kind === 'booster' ? '#c084fc' : '#ffd166');
       ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2); ctx.fill();
     });
 
-    // BLOCKS (điện thoại/⚠️)
+    // Blocks
     ctx.fillStyle = '#ff6b6b';
     this.blocks.forEach(b => {
       ctx.fillRect(b.x, b.y, b.w, b.h);
-      // icon cảnh báo đơn giản
-      ctx.fillStyle = '#111827';
-      ctx.font = '14px sans-serif';
+      ctx.fillStyle = '#111827'; ctx.font = '14px sans-serif';
       ctx.fillText('⚠', b.x + b.w * 0.25, b.y + b.h * 0.75);
       ctx.fillStyle = '#ff6b6b';
     });
 
-    // GLIDER (Ryan face tối giản)
-    ctx.save();
-    ctx.translate(this.glider.x, this.glider.y);
-    ctx.fillStyle = '#ffd166';
-    ctx.beginPath(); ctx.arc(0, 0, this.glider.r, 0, Math.PI * 2); ctx.fill();
-    // mắt + miệng nhỏ
-    ctx.fillStyle = '#3f3d56';
-    const er = Math.max(2, this.glider.r * 0.14);
-    ctx.beginPath(); ctx.arc(-this.glider.r * 0.35, -this.glider.r * 0.15, er, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(+this.glider.r * 0.35, -this.glider.r * 0.15, er, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#3f3d56'; ctx.lineWidth = Math.max(1, this.glider.r * 0.1);
-    ctx.beginPath(); ctx.arc(0, this.glider.r * 0.15, this.glider.r * 0.45, 0, Math.PI); ctx.stroke();
-    ctx.restore();
+    // Boss
+    if (this.boss && this.boss.alive) {
+      const b = this.boss;
+      if (this.bossSkinReady && this.bossSkin) {
+        const s = b.r * 2;
+        ctx.drawImage(this.bossSkin, b.x - b.r, b.y - b.r, s, s);
+      } else {
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#9f1239'; ctx.lineWidth = 4; ctx.stroke();
+      }
+      // HP bar
+      const bw = 180, bh = 10, bx = (W - bw) / 2, by = 10;
+      ctx.fillStyle = '#1f2937'; ctx.fillRect(bx, by, bw, bh);
+      const hpw = Math.max(0, Math.round(bw * (b.hp / b.hpMax)));
+      ctx.fillStyle = '#ef4444'; ctx.fillRect(bx, by, hpw, bh);
+      ctx.strokeStyle = '#111827'; ctx.strokeRect(bx, by, bw, bh);
+    }
 
-    // floaters (điểm bay lên)
-    this.floaters = this.floaters.filter(f => {
-      f.t += dt;
-      f.y -= 0.03 * dt;
-      return f.t < f.life;
-    });
+    // Main (sprite nếu có, fallback tròn)
+    if (this.skinReady && this.skin) {
+      const s = this.glider.r * 2;
+      ctx.drawImage(this.skin, this.glider.x - this.glider.r, this.glider.y - this.glider.r, s, s);
+    } else {
+      ctx.fillStyle = '#ffd166';
+      ctx.beginPath(); ctx.arc(this.glider.x, this.glider.y, this.glider.r, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Floaters
+    this.floaters = this.floaters.filter(f => { f.t += dt; f.y -= 0.03 * dt; return f.t < f.life; });
     this.floaters.forEach(f => {
       const a = 1 - (f.t / f.life);
       ctx.globalAlpha = Math.max(0, a);
@@ -253,22 +372,22 @@ export class Game {
     });
 
     // HUD
-    const fs = Math.max(22, Math.round(w * 0.05));
+    const fs = Math.max(22, Math.round(W * 0.05));
     ctx.fillStyle = '#ffffff';
     ctx.font = `${fs}px "Times New Roman", serif`;
-    ctx.fillText(`Score: ${Math.round(this.score * multNow)}`, 12, 18 + fs * 0.1);
+    ctx.fillText(`Score: ${Math.round(this.score * multStreak)}`, 12, 18 + fs * 0.1);
     ctx.fillText(`Combo: ${this.combo}`, 12, 18 + fs * 0.1 + fs * 1.15);
     const tLeft = Math.max(0, Math.ceil((this.duration - this.elapsed) / 1000));
     ctx.fillText(`Time: ${tLeft}s`, 12, 18 + fs * 0.1 + fs * 2.30);
 
-    // wave/multiplier indicator
+    // Wave & Boost
     ctx.font = `bold ${Math.max(14, fs * 0.5)}px sans-serif`;
     ctx.fillStyle = boosting ? '#c084fc' : '#94a3b8';
-    const boostTxt = boosting ? 'x2 BOOST' : 'x1';
-    ctx.fillText(`Wave: ${wave.lv} • ${boostTxt} • StreakBonus:${(this.streakBonus).toFixed(2)}x`, 12, 18 + fs * 0.1 + fs * 3.20);
+    ctx.fillText(`Wave: ${wave.lv} • ${boosting ? 'x2 BOOST' : 'x1'} • Streak:${this.streakBonus.toFixed(2)}x`,
+      12, 18 + fs * 0.1 + fs * 3.20);
 
-    // hearts (trên phải)
-    const hx = w - 10, hy = 16, gap = 24, rr = 8;
+    // Hearts
+    const hx = W - 10, hy = 16, gap = 24, rr = 8;
     for (let i = 0; i < this.maxHearts; i++) {
       const x = hx - i * gap, y = hy;
       ctx.globalAlpha = i < this.hearts ? 1 : 0.25;
@@ -276,13 +395,11 @@ export class Game {
       ctx.globalAlpha = 1.0;
     }
 
-    // flash khi trúng
+    // Flash
     if (this.flash > 0) {
       ctx.globalAlpha = this.flash * 0.4;
-      ctx.fillStyle = '#ef4444';
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalAlpha = 1.0;
-      this.flash *= 0.92;
+      ctx.fillStyle = '#ef4444'; ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1.0; this.flash *= 0.92;
     }
 
     requestAnimationFrame(this._step.bind(this));
@@ -291,26 +408,18 @@ export class Game {
   end() {
     this.playing = false;
     this.onEnd && this.onEnd({
-      score: Math.round(this.score * this.streakBonus), // score đã gồm bonus streak; booster đã áp dụng realtime
+      score: Math.round(this.score * this.streakBonus),
       comboMax: this.comboMax,
       duration_ms: Math.min(this.elapsed, this.duration)
     });
   }
 
-  _float(x, y, text, color) {
-    this.floaters.push({ x, y, text, color, t: 0, life: 800 });
-  }
-
+  _float(x, y, text, color) { this.floaters.push({ x, y, text, color, t: 0, life: 800 }); }
   _heart(ctx, x, y, r, color = '#ef4444') {
-    // vẽ trái tim nhỏ
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(0, r / 2);
+    ctx.save(); ctx.translate(x, y); ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(0, r / 2);
     ctx.bezierCurveTo(r, -r / 1.5, r * 2, r / 3, 0, r * 1.6);
     ctx.bezierCurveTo(-r * 2, r / 3, -r, -r / 1.5, 0, r / 2);
-    ctx.fill();
-    ctx.restore();
+    ctx.fill(); ctx.restore();
   }
 }

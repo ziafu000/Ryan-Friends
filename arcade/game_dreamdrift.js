@@ -42,6 +42,25 @@ export class Game {
     this.playing = false;
     this.t0 = 0; this.elapsed = 0;
     this.score = 0; this.combo = 0; this.comboMax = 0;
+    // Evolution (biến hình theo score)
+    this.evoLevel = 0;                             // level hiện tại
+    this.evoThresholds = [20, 60, 120, 200];       // các mốc score
+    this.evoDmgBonus = [0, 1, 2, 3, 5];            // bonus damage theo level (index = level)
+    this.totalBossDamage = 0;
+    this.bossHitCount = 0;
+
+    // Dash / Charge
+    this.isCharging = false;
+    this.chargeTime = 0;          // ms
+    this.chargeMax = 800;         // giữ 0.8s là full charge
+
+    this.dashing = false;
+    this.dashTime = 0;
+    this.dashDuration = 180;      // ms
+    this.dashPower = 20;          // tốc độ dịch chuyển mỗi frame khi dash
+
+    this.dashCount = 0;           // đếm số lần dash (cho end game stats)
+
 
     // Entities
     this.tokens = [];
@@ -103,6 +122,23 @@ export class Game {
     if (s < 50) return { lv: 'M', speed: 1.25, rateMul: 1.25 };
     return { lv: 'H', speed: 1.6, rateMul: 1.6 };
   }
+
+  _checkEvolution() {
+    // duyệt từ level cao xuống để tìm level phù hợp với score hiện tại
+    for (let i = this.evoThresholds.length - 1; i >= 0; i--) {
+      if (this.score >= this.evoThresholds[i]) {
+        const newLevel = i + 1;
+        if (newLevel !== this.evoLevel) {
+          this.evoLevel = newLevel;
+          // hiệu ứng báo EVOLVE
+          this._float(this.glider.x, this.glider.y - 40, 'EVOLVE!', '#60a5fa');
+          this.flash = 0.7;
+        }
+        break;
+      }
+    }
+  }
+
 
   _spawnToken() {
     const h = this._h(), w = this._w();
@@ -197,11 +233,34 @@ export class Game {
     let rateMul = Number(wave.rateMul || 1);
 
     // Follow + acceleration
-    const ACC = 0.22, DAMP = 0.82;
+    const ACC = 0.22;
+    const DAMP = 0.82;
     const dx = (this.target.x - this.glider.x), dy = (this.target.y - this.glider.y);
-    this.glider.vx = this.glider.vx * DAMP + dx * ACC;
-    this.glider.vy = this.glider.vy * DAMP + dy * ACC;
-    this.glider.x += this.glider.vx; this.glider.y += this.glider.vy;
+
+    // Charge: tăng thời gian charge
+    if (this.isCharging) {
+      this.chargeTime += dt;
+    }
+
+    if (this.dashing) {
+      // Dash: override movement bằng lao thẳng tới target
+      this.dashTime += dt;
+      const angle = Math.atan2(dy, dx);
+      const speed = this.dashPower;
+      this.glider.x += Math.cos(angle) * speed;
+      this.glider.y += Math.sin(angle) * speed;
+
+      if (this.dashTime >= this.dashDuration) {
+        this.dashing = false;
+      }
+    } else {
+      // Di chuyển normal: follow với acceleration
+      this.glider.vx = this.glider.vx * DAMP + dx * ACC;
+      this.glider.vy = this.glider.vy * DAMP + dy * ACC;
+      this.glider.x += this.glider.vx;
+      this.glider.y += this.glider.vy;
+    }
+
 
     // Bounds
     const w = this._w(), h = this._h();
@@ -250,7 +309,7 @@ export class Game {
           this._float(t.x, t.y, 'x2 ⚡', '#c084fc');
         } else {
           const gain = boosting ? 2 : 1;
-          this.score += gain; this.combo += 1; this.comboMax = Math.max(this.comboMax, this.combo);
+          this.score += gain; this._checkEvolution(); this.combo += 1; this.comboMax = Math.max(this.comboMax, this.combo);
           if (navigator.vibrate && !this.skipFx) navigator.vibrate(10);
           this._float(t.x, t.y, gain === 2 ? '+2' : '+1', '#ffd166');
         }
@@ -290,8 +349,12 @@ export class Game {
       const dmgTick = Number((this.cfg.boss && this.cfg.boss.damage_tick_ms) || 180);
       if (this._playerHitsBoss() && this.bossDmgAcc >= dmgTick) {
         this.bossDmgAcc = 0;
-        const dmg = boosting ? 2 : 1; // booster giúp hạ nhanh hơn
+        const base = boosting ? 2 : 1;
+        const evoBonus = this.evoDmgBonus[this.evoLevel] || 0;
+        const dmg = base + evoBonus;
         this.boss.hp = Math.max(0, this.boss.hp - dmg);
+        this.totalBossDamage += dmg;
+        this.bossHitCount += 1;
         this._float(this.boss.x, this.boss.y - this.boss.r - 6, '-' + dmg, '#fca5a5');
         if (navigator.vibrate && !this.skipFx) navigator.vibrate(8);
 
@@ -300,10 +363,36 @@ export class Game {
           this.boss.alive = false;
           const bonus = Number((this.cfg.boss && this.cfg.boss.score_bonus) || 18);
           this.score += bonus;
+          this._checkEvolution();
           this._float(this.boss.x, this.boss.y, `+${bonus} BOSS`, '#f472b6');
           this.flash = 0.8;
         }
       }
+      // Nếu đang DASH và chạm Boss → gây damage lớn
+      if (this.dashing && this._playerHitsBoss()) {
+        this.dashing = false; // kết thúc dash khi đâm trúng
+        const dashBase = 5;
+        const evoBonus = this.evoDmgBonus[this.evoLevel] || 0;
+        const dmgDash = dashBase + evoBonus * 2; // dash dựa nhiều vào evolution
+
+        this.boss.hp = Math.max(0, this.boss.hp - dmgDash);
+        this.totalBossDamage += dmgDash;
+        this.bossHitCount += 1;
+
+        this._float(this.boss.x, this.boss.y, `DASH -${dmgDash}`, '#f97316');
+        this.flash = 0.9;
+        if (navigator.vibrate && !this.skipFx) navigator.vibrate([15, 40, 15]);
+
+        if (this.boss.hp <= 0) {
+          this.boss.alive = false;
+          const bonus = Number((this.cfg.boss && this.cfg.boss.score_bonus) || 18);
+          this.score += bonus;
+          this._checkEvolution();
+          this._float(this.boss.x, this.boss.y, `+${bonus} BOSS`, '#f472b6');
+          this.flash = 0.8;
+        }
+      }
+
     }
 
     // DRAW (guard ctx)
@@ -352,13 +441,29 @@ export class Game {
     }
 
     // Main (sprite nếu có, fallback tròn)
+    // Main (sprite nếu có, scale theo evolution)
     if (this.skinReady && this.skin) {
-      const s = this.glider.r * 2;
-      ctx.drawImage(this.skin, this.glider.x - this.glider.r, this.glider.y - this.glider.r, s, s);
+      const evoScale = 1 + this.evoLevel * 0.15;      // mỗi level to hơn 15%
+      const chargeScale = this.isCharging
+        ? (1 + Math.min(0.2, this.chargeTime / this.chargeMax * 0.4))
+        : 1;
+      const scale = evoScale * chargeScale;
+      const s = this.glider.r * 2 * scale;
+      ctx.drawImage(this.skin,
+        this.glider.x - s / 2,
+        this.glider.y - s / 2,
+        s, s
+      );
     } else {
+      // fallback: hình tròn, cũng scale theo level
+      const scale = 1 + this.evoLevel * 0.15;
+      const r = this.glider.r * scale;
       ctx.fillStyle = '#ffd166';
-      ctx.beginPath(); ctx.arc(this.glider.x, this.glider.y, this.glider.r, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.glider.x, this.glider.y, r, 0, Math.PI * 2);
+      ctx.fill();
     }
+
 
     // Floaters
     this.floaters = this.floaters.filter(f => { f.t += dt; f.y -= 0.03 * dt; return f.t < f.life; });
@@ -410,9 +515,14 @@ export class Game {
     this.onEnd && this.onEnd({
       score: Math.round(this.score * this.streakBonus),
       comboMax: this.comboMax,
-      duration_ms: Math.min(this.elapsed, this.duration)
+      duration_ms: Math.min(this.elapsed, this.duration),
+      bossDamage: this.totalBossDamage || 0,
+      bossHits: this.bossHitCount || 0,
+      dashCount: this.dashCount || 0,
+      evoLevel: this.evoLevel || 0
     });
   }
+
 
   _float(x, y, text, color) { this.floaters.push({ x, y, text, color, t: 0, life: 800 }); }
   _heart(ctx, x, y, r, color = '#ef4444') {
@@ -422,4 +532,25 @@ export class Game {
     ctx.bezierCurveTo(-r * 2, r / 3, -r, -r / 1.5, 0, r / 2);
     ctx.fill(); ctx.restore();
   }
+
+  startCharge() {
+    if (!this.playing) return;
+    if (this.dashing) return; // đang dash thì không charge
+    this.isCharging = true;
+    this.chargeTime = 0;
+  }
+
+  releaseDash() {
+    if (!this.isCharging || !this.playing) return;
+    this.isCharging = false;
+
+    const pct = Math.min(1, this.chargeTime / this.chargeMax); // 0..1
+    if (pct < 0.2) return; // charge quá ít thì không dash (tránh spam click)
+
+    this.dashing = true;
+    this.dashTime = 0;
+    this.dashPower = 18 + pct * 32;   // charge càng lâu dash càng mạnh
+    this.dashCount += 1;
+  }
+
 }

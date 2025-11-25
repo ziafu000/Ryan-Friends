@@ -109,7 +109,7 @@
       </div> -->
 
 
-
+      <div id="dd-end-panel" class="dd-end-panel" style="display:none; margin-top:12px;"></div>
       <p id="gateMsg" class="text-accent text-center mt-2 mb-0"></p>
     </section>
 
@@ -278,17 +278,36 @@
     /* ========= Game flow ========= */
     let game;
     function onGameEnd(stats) {
-      Arcade.onGameEnd(state, stats);
-      const drops = pickRewards(state.cfg.rewards.drops);
-      const xp = state.cfg.rewards.calm_xp_per_run;
-      el.resultBody.innerHTML = [
-        `<p>Điểm: <b>${stats.score}</b> — Combo max: <b>${stats.comboMax}</b> — Thời lượng: <b>${Math.round(stats.duration_ms / 1000)}s</b></p>`,
-        `<p>Calm XP +<b>${xp}</b> • Vật phẩm rơi: <b>${drops.map(d => d.id).join(', ') || '—'}</b></p>`,
-        `<p>Liên Hệ <a href="https://www.facebook.com/799741289893787" target="_blank" rel="noopener noreferrer">HL_Ryan</a> để nhận quà</p>`
-      ].join('');
-      el.resultCard.hidden = false;
+      // gọi rewards / arcade logic có sẵn
+      Arcade.onGameEnd(state, stats);   // nếu bạn đang có hàm này, giữ lại
+
+      const s = stats;
+      const sec = Math.round(s.duration_ms / 1000);
+      const dps = s.duration_ms > 0 ? (s.bossDamage / (s.duration_ms / 1000)) : 0;
+
+      const html = `
+    <div class="card" style="padding:12px;">
+      <h3 style="margin-bottom:8px;">✨ Thành tựu hôm nay ✨</h3>
+      <p>🌟 Điểm cuối: <b>${s.score}</b></p>
+      <p>🔥 Damage lên Boss: <b>${s.bossDamage}</b> (DPS: <b>${dps.toFixed(1)}</b>)</p>
+      <p>🎯 Lần chạm Boss: <b>${s.bossHits}</b></p>
+      <p>💥 Số lần Dash: <b>${s.dashCount}</b></p>
+      <p>🚀 Level tiến hoá đạt được: <b>${s.evoLevel}</b></p>
+      <p>🎮 Combo cao nhất: <b>${s.comboMax}</b></p>
+      <p>⏱ Thời gian sống sót: <b>${sec}s</b></p>
+    </div>
+  `;
+
+      const panel = document.getElementById('dd-end-panel');
+      if (panel) {
+        panel.innerHTML = html;
+        panel.style.display = 'block';
+      }
+
+      // refresh UI token/streak như trước
       refreshUI();
     }
+
 
     function startGame() {
       const gate = Arcade.checkGate(state);
@@ -341,6 +360,21 @@
     el.canvas.addEventListener('pointermove', feedMove, moveOpts);
     el.canvas.addEventListener('mousemove', feedMove);
     el.canvas.addEventListener('touchmove', feedMove, moveOpts);
+    // Giữ chuột/chạm để charge, thả để dash
+    el.canvas.addEventListener('mousedown', (e) => {
+      if (game) game.startCharge();
+    });
+    el.canvas.addEventListener('mouseup', (e) => {
+      if (game) game.releaseDash();
+    });
+
+    el.canvas.addEventListener('touchstart', (e) => {
+      if (game) game.startCharge();
+    });
+    el.canvas.addEventListener('touchend', (e) => {
+      if (game) game.releaseDash();
+    });
+
     ['pointerdown', 'mousedown', 'touchstart'].forEach(ev => el.canvas.addEventListener(ev, feedTap, moveOpts));
 
     // Overlay (nếu có)

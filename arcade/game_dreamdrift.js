@@ -13,6 +13,15 @@ export class Game {
     this.onEnd = onEnd || (() => { });
     this.startingHearts = Math.max(1, Number(startingHearts || 2));
     this.streakBonus = Number(streakBonus || 1);
+    this.skin = null;
+    this.skinReady = false;
+    const skinUrl = (this.cfg && this.cfg.main_skin) || null;
+    if (skinUrl) {
+      const img = new Image();
+      img.onload = () => { this.skin = img; this.skinReady = true; };
+      img.onerror = () => console.warn('Skin load failed:', skinUrl);
+      img.src = skinUrl;
+    }
     this.reset();
   }
 
@@ -116,8 +125,7 @@ export class Game {
     if (this.elapsed >= this.duration) { this.end(); return; }
 
     const wave = this._wave();                   // wave params
-    const speedMul = wave.speed;                 // tăng tốc khi lên wave
-    const rateMul = wave.rateMul;
+    const { speed: speedMul, rateMul } = wave;   // tăng tốc khi lên wave
 
     // follow with acceleration
     const ACC = 0.22;   // tăng/giảm để mượt hơn hay “dính” hơn
@@ -195,7 +203,7 @@ export class Game {
     });
 
     // draw
-    const ctx = this.ctx;
+    const { ctx } = this;
     ctx.clearRect(0, 0, w, h);
     // background
     ctx.fillStyle = '#0e1320'; ctx.fillRect(0, 0, w, h);
@@ -224,19 +232,25 @@ export class Game {
       ctx.fillStyle = '#ff6b6b';
     });
 
-    // GLIDER (Ryan face tối giản)
-    ctx.save();
-    ctx.translate(this.glider.x, this.glider.y);
-    ctx.fillStyle = '#ffd166';
-    ctx.beginPath(); ctx.arc(0, 0, this.glider.r, 0, Math.PI * 2); ctx.fill();
-    // mắt + miệng nhỏ
-    ctx.fillStyle = '#3f3d56';
-    const er = Math.max(2, this.glider.r * 0.14);
-    ctx.beginPath(); ctx.arc(-this.glider.r * 0.35, -this.glider.r * 0.15, er, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(+this.glider.r * 0.35, -this.glider.r * 0.15, er, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#3f3d56'; ctx.lineWidth = Math.max(1, this.glider.r * 0.1);
-    ctx.beginPath(); ctx.arc(0, this.glider.r * 0.15, this.glider.r * 0.45, 0, Math.PI); ctx.stroke();
-    ctx.restore();
+    // MAIN (sprite nếu có; fallback vẽ tròn nếu ảnh chưa tải)
+    if (this.skinReady && this.skin) {
+      const s = this.glider.r * 2; // ô vuông vẽ sprite
+      this.ctx.drawImage(
+        this.skin,
+        this.glider.x - this.glider.r,
+        this.glider.y - this.glider.r,
+        s, s
+      );
+    } else {
+      // Fallback: vẽ tròn như cũ
+      const { ctx } = this;
+      ctx.save();
+      ctx.translate(this.glider.x, this.glider.y);
+      ctx.fillStyle = '#ffd166';
+      ctx.beginPath(); ctx.arc(0, 0, this.glider.r, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
 
     // floaters (điểm bay lên)
     this.floaters = this.floaters.filter(f => {

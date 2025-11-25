@@ -35,12 +35,12 @@
         60,
         80
       ],
-      "hp_base": 100,
-      "hp_growth": 20,
+      "hp_base": 80,
+      "hp_growth": 12,
       "radius": 44,
       "speed": 1.1,
       "score_bonus": 18,
-      "damage_tick_ms": 180
+      "damage_tick_ms": 240
     }
   },
   "rewards": {

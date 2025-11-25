@@ -453,5 +453,72 @@ select.form-control {
     opacity: 1;
 }
 
-#gg { touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
-.zone-hold { touch-action:none; }
+#gg {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.zone-hold {
+    touch-action: none;
+}
+
+/* Nhóm màu theo độ quan trọng */
+#hl-tools-menu .btn.hl-critical {
+    background: #e11d48;
+    color: #fff;
+    border: none;
+}
+
+#hl-tools-menu .btn.hl-primary {
+    background: #22c55e;
+    color: #0b1220;
+    border: none;
+}
+
+#hl-tools-menu .btn.hl-secondary {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+}
+
+#hl-tools-menu .btn.hl-tertiary {
+    background: #64748b;
+    color: #fff;
+    border: none;
+}
+
+/* Hiệu ứng chung cho nút trong Tools */
+#hl-tools-menu .btn {
+    border-radius: 9999px;
+    padding: 8px 14px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+    transform: translateY(0);
+    transition: transform .1s ease, filter .15s ease, opacity .15s ease;
+}
+
+#hl-tools-menu .btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+#hl-tools-menu .btn:active {
+    transform: translateY(0);
+    filter: brightness(.95);
+}
+
+#hl-tools-menu .btn:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+/* Nút ngoài menu Tools (Export/Import/Reset/Tools) cũng có group riêng nếu muốn */
+#hl-controls .btn.hl-utility {
+    background: #374151;
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    font-weight: 700;
+}

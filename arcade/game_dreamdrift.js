@@ -14,32 +14,6 @@ export class Game {
     this.onEnd = onEnd || (() => { });
     this.startingHearts = Math.max(1, Number(startingHearts || 2));
     this.streakBonus = Number(streakBonus || 1);
-    this.evoLevel = 0;        // level tiến hoá
-    this.evoThresholds = [20, 60, 120, 200];   // các mốc score
-    this.evoDmgBonus = [1, 2, 3, 5, 7];         // damage thêm ứng với từng level
-    // Check evolution
-    for (let i = this.evoThresholds.length - 1; i >= 0; i--) {
-      if (this.score >= this.evoThresholds[i]) {
-        if (this.evoLevel !== (i + 1)) {
-          this.evoLevel = i + 1;
-          this._float(this.glider.x, this.glider.y - 40, 'EVOLVE!', '#60a5fa');
-          this.flash = 0.7; // flash xanh
-        }
-        break;
-      }
-    }
-    const scale = 1 + this.evoLevel * 0.15;  // lớn dần
-    const s = this.glider.r * 2 * scale;
-    ctx.drawImage(this.skin, this.glider.x - s / 2, this.glider.y - s / 2, s, s);
-    this.isCharging = false;
-    this.chargeTime = 0;          // ms
-    this.chargeMax = 800;         // 0.8s giữ = dash tối đa
-    this.dashing = false;
-    this.dashTime = 0;
-    this.dashDuration = 180;      // ms lao
-
-
-
 
     // sprite nhân vật (tùy chọn)
     this.skin = null; this.skinReady = false;
@@ -262,33 +236,6 @@ export class Game {
     const multStreak = this.streakBonus;
     const multNow = (boosting ? 2 : 1) * multStreak;
 
-    // CHARGE
-    if (this.isCharging) {
-      this.chargeTime += dt;
-      // hiệu ứng phồng lên
-      this.glider.r = this.cfg.glider_radius * (1 + Math.min(0.25, this.chargeTime / this.chargeMax));
-    }
-
-    // DASH
-    if (this.dashing) {
-      this.dashTime += dt;
-      if (this.dashTime >= this.dashDuration) this.dashing = false;
-
-      const angle = Math.atan2(this.target.y - this.glider.y, this.target.x - this.glider.x);
-      this.glider.x += Math.cos(angle) * this.dashPower;
-      this.glider.y += Math.sin(angle) * this.dashPower;
-
-      // Dash damage vs Boss
-      if (this._playerHitsBoss()) {
-        const dmg = 5 + this.evoLevel * 2;   // damage lớn
-        this.boss.hp = Math.max(0, this.boss.hp - dmg);
-        this._float(this.boss.x, this.boss.y, `DASH -${dmg}`, '#f87171');
-        this.flash = 0.9;
-        this.dashing = false; // kết thúc dash khi trúng
-      }
-    }
-
-
     // TOKENS collisions
     this.tokens = this.tokens.filter(t => {
       if (t.x < -20) return false;
@@ -310,9 +257,7 @@ export class Game {
         return false;
       }
       return true;
-
     });
-
 
     // BLOCKS collisions
     this.hitCooldown = Math.max(0, this.hitCooldown - dt);
@@ -345,9 +290,7 @@ export class Game {
       const dmgTick = Number((this.cfg.boss && this.cfg.boss.damage_tick_ms) || 180);
       if (this._playerHitsBoss() && this.bossDmgAcc >= dmgTick) {
         this.bossDmgAcc = 0;
-        const base = boosting ? 2 : 1;
-        const evo = this.evoDmgBonus[this.evoLevel] || 1;
-        const dmg = base + evo;
+        const dmg = boosting ? 2 : 1; // booster giúp hạ nhanh hơn
         this.boss.hp = Math.max(0, this.boss.hp - dmg);
         this._float(this.boss.x, this.boss.y - this.boss.r - 6, '-' + dmg, '#fca5a5');
         if (navigator.vibrate && !this.skipFx) navigator.vibrate(8);
@@ -479,22 +422,4 @@ export class Game {
     ctx.bezierCurveTo(-r * 2, r / 3, -r, -r / 1.5, 0, r / 2);
     ctx.fill(); ctx.restore();
   }
-
-  startCharge() {
-    if (!this.playing) return;
-    this.isCharging = true;
-    this.chargeTime = 0;
-  }
-
-  releaseDash() {
-    if (!this.isCharging) return;
-    this.isCharging = false;
-
-    const pct = Math.min(1, this.chargeTime / this.chargeMax); // mức nén lực
-    this.dashing = true;
-    this.dashTime = 0;
-    this.dashPower = 18 + pct * 32; // tốc độ dash
-  }
-
 }
-

@@ -293,13 +293,39 @@
     function startGame() {
       const gate = Arcade.checkGate(state);
       if (gate) { Arcade.logEvent('arcade_locked', { reason: gate }); refreshUI(); return; }
+
+      // --- bonus theo streak ---
+      const cfg = state.cfg.dream_drift;
+      const baseHearts = Number(cfg.base_hearts || 2);
+      const maxHearts = Number(cfg.max_hearts || 3);
+      const extraHeart = (state.streak >= (cfg.bonus_heart_streak || 7)) ? 1 : 0;
+      const startingHearts = Math.min(maxHearts, baseHearts + extraHeart);
+
+      const streakBonus = (state.streak >= 3)
+        ? (1 + Number(cfg.streak_bonus_at3_pct || 5) / 100)  // ví dụ 1.05
+        : 1;
+
+      if (extraHeart) {
+        // Ryan nói câu chúc may mắn
+        el.gateMsg.textContent = "Hôm nay em giữ nhịp ngon lắm nên Ryan cho thêm 1 tim may mắn.";
+        setTimeout(() => { if (el.gateMsg.textContent.includes("Ryan")) el.gateMsg.textContent = ""; }, 3000);
+      }
+
       Arcade.consumeToken(state);
       refreshUI();
       resizeCanvas();
-      game = new Game(el.canvas, state.cfg.dream_drift, { skipFx: el.skipFx?.checked, onEnd: onGameEnd });
-      Arcade.logEvent('game_start', { game_id: 'dream_drift' });
+
+      game = new Game(el.canvas, cfg, {
+        skipFx: el.skipFx?.checked,
+        startingHearts,
+        streakBonus,
+        onEnd: onGameEnd
+      });
+
+      Arcade.logEvent('game_start', { game_id: 'dream_drift', startingHearts, streakBonus });
       game.start();
     }
+
 
     el.btnPlay?.addEventListener('click', startGame);
     el.btnReplay?.addEventListener('click', () => { el.resultCard.hidden = true; startGame(); });

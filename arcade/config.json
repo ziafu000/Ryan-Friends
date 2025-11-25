@@ -8,21 +8,26 @@
     "cooldown_minutes": 3
   },
   "dream_drift": {
-    "duration_ms": 65000,
-    "gravity": 0.18,
-    "lift": 0.28,
-    "star_rate_ms": 700,
-    "light_rate_ms": 1000,
+    "duration_ms": 90000,
     "speed": 2.2,
     "glider_radius": 18,
+    "star_rate_ms": 700,
+    "light_rate_ms": 1000,
     "star_radius": [
       8,
       10
     ],
     "light_size": [
-      24,
-      24
-    ]
+      26,
+      26
+    ],
+    "base_hearts": 2,
+    "max_hearts": 3,
+    "bonus_heart_streak": 7,
+    "streak_bonus_at3_pct": 5,
+    "booster_duration_ms": 6000,
+    "booster_chance": 0.18,
+    "heal_chance": 0.08
   },
   "rewards": {
     "calm_xp_per_run": 10,

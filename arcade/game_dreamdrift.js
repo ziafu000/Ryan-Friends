@@ -79,6 +79,7 @@ export class Game {
     this.dashDuration = 180; // ms
     this.dashPower = 20; // tốc độ dịch chuyển mỗi frame khi dash
     this.dashCount = 0; // đếm số lần dash (cho end stats)
+    this.dashDir = { x: 1, y: 0 }; // hướng dash cố định (đặt lại mỗi lần releaseDash)
 
     // Entities
     this.tokens = [];
@@ -341,18 +342,17 @@ export class Game {
     }
 
     if (this.dashing) {
-      // Dash: lao thẳng về target
+      // Dash: đi theo hướng đã khoá sẵn (dashDir), không bám chuột nữa
       this.dashTime += dt;
-      const angle = Math.atan2(dy, dx);
       const speed = this.dashPower;
-      this.glider.x += Math.cos(angle) * speed;
-      this.glider.y += Math.sin(angle) * speed;
+      this.glider.x += this.dashDir.x * speed;
+      this.glider.y += this.dashDir.y * speed;
 
       if (this.dashTime >= this.dashDuration) {
         this.dashing = false;
       }
     } else {
-      // Di chuyển bình thường
+      // Di chuyển bình thường: bám target với acceleration
       this.glider.vx = this.glider.vx * DAMP + dx * ACC;
       this.glider.vy = this.glider.vy * DAMP + dy * ACC;
       this.glider.x += this.glider.vx;
@@ -768,6 +768,13 @@ export class Game {
 
     const pct = Math.min(1, this.chargeTime / this.chargeMax);
     if (pct < 0.2) return; // charge quá ít thì không dash
+
+    // Khoá hướng dash tại thời điểm nhả (từ glider → target)
+    const dx = this.target.x - this.glider.x;
+    const dy = this.target.y - this.glider.y;
+    let len = Math.hypot(dx, dy);
+    if (!len || len === 0) len = 1;
+    this.dashDir = { x: dx / len, y: dy / len };
 
     this.dashing = true;
     this.dashTime = 0;

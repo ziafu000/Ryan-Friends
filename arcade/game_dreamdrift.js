@@ -49,6 +49,11 @@ export class Game {
     this.totalBossDamage = 0;
     this.bossHitCount = 0;
 
+    this.evoFx = {
+      active: false,
+      t: 0      // ms đã chạy của hiệu ứng
+    };
+
     // Dash / Charge
     this.isCharging = false;
     this.chargeTime = 0;          // ms
@@ -87,8 +92,9 @@ export class Game {
     // Pointer-follow + acceleration
     const w = this._w(), h = this._h();
     const rCfg = (this.cfg.glider_radius != null) ? Number(this.cfg.glider_radius) : 18;
-    this.glider = { x: w * 0.2, y: h * 0.5, r: rCfg, vx: 0, vy: 0 };
-    this.target = { x: this.glider.x, y: this.glider.y };
+    // const scale cũ: this.glider = { x: w * 0.2, y: h * 0.5, r: rCfg, vx: 0, vy: 0 };
+    const s = this._scale();                          // ✅ thêm
+    this.glider = { x: w * 0.2, y: h * 0.5, r: rCfg * s, vx: 0, vy: 0 };
 
     // Boss system
     const bcfg = this.cfg.boss || {};
@@ -101,6 +107,14 @@ export class Game {
 
   _w() { return this.C.clientWidth || this.C.width; }
   _h() { return this.C.clientHeight || this.C.height; }
+
+  // ✅ scale kích thước theo chiều cao canvas
+  _scale() {
+    const baseH = 480;        // chiều cao "chuẩn" để so sánh
+    const h = this._h() || baseH;
+    // clamp cho an toàn, tránh quá to/quá nhỏ
+    return Math.max(0.8, Math.min(1.6, h / baseH));
+  }
 
   setTargetFromEvent(e) {
     let cx, cy;
@@ -130,9 +144,14 @@ export class Game {
         const newLevel = i + 1;
         if (newLevel !== this.evoLevel) {
           this.evoLevel = newLevel;
+
           // hiệu ứng báo EVOLVE
           this._float(this.glider.x, this.glider.y - 40, 'EVOLVE!', '#60a5fa');
           this.flash = 0.7;
+
+          // ✅ kích hoạt hiệu ứng biến hình
+          this.evoFx.active = true;
+          this.evoFx.t = 0;
         }
         break;
       }
@@ -140,12 +159,17 @@ export class Game {
   }
 
 
+
   _spawnToken() {
     const h = this._h(), w = this._w();
     const sr = Array.isArray(this.cfg.star_radius) ? this.cfg.star_radius : [8, 10];
     const rMin = (sr[0] != null ? Number(sr[0]) : 8);
     const rMax = (sr[1] != null ? Number(sr[1]) : 10);
-    const r = rMin + Math.random() * (rMax - rMin);
+    const sc = this._scale();   // ✅ thêm
+
+    const rBase = rMin + Math.random() * (rMax - rMin);
+    const r = rBase * sc;       // ✅ radius được scale theo màn hình
+
     const y = 60 + Math.random() * (h - 120);
     const pHeal = Number(this.cfg.heal_chance != null ? this.cfg.heal_chance : 0.08);
     const pBoost = Number(this.cfg.booster_chance != null ? this.cfg.booster_chance : 0.18);
@@ -154,15 +178,22 @@ export class Game {
     const v = this.baseSpeed * (0.95 + Math.random() * 0.35);
     this.tokens.push({ x: w + 20, y, r, v, kind });
   }
+
   _spawnBlock() {
     const h = this._h(), w = this._w();
     const ls = Array.isArray(this.cfg.light_size) ? this.cfg.light_size : [26, 26];
-    const lw = (ls[0] != null ? Number(ls[0]) : 26);
-    const lh = (ls[1] != null ? Number(ls[1]) : 26);
+    const sc = this._scale();    // ✅ thêm
+
+    const lwBase = (ls[0] != null ? Number(ls[0]) : 26);
+    const lhBase = (ls[1] != null ? Number(ls[1]) : 26);
+    const lw = lwBase * sc;      // ✅ scale theo màn
+    const lh = lhBase * sc;
+
     const y = 70 + Math.random() * (h - 140);
     const v = this.baseSpeed * (1.0 + Math.random() * 0.6);
     this.blocks.push({ x: w + lw, y, w: lw, h: lh, v });
   }
+
 
   _spawnBoss() {
     const w = this._w(), h = this._h();
@@ -170,7 +201,11 @@ export class Game {
     const i = this.bossIndex; // boss thứ i
     const hpBase = Number(bcfg.hp_base != null ? bcfg.hp_base : 20);
     const hpGrow = Number(bcfg.hp_growth != null ? bcfg.hp_growth : 10);
-    const r = Number(bcfg.radius != null ? bcfg.radius : 44);
+    const sc = this._scale();   // ✅ thêm
+
+    const rBase = Number(bcfg.radius != null ? bcfg.radius : 44);
+    const r = rBase * sc;       // ✅ boss to lên khi màn lớn
+
     const speed = Number(bcfg.speed != null ? bcfg.speed : 1.1);
 
     this.boss = {
@@ -183,6 +218,7 @@ export class Game {
     this.bossEmitAcc = 0;
     this._float(this.boss.x, this.boss.y - this.boss.r - 10, 'BOSS!', '#f472b6');
   }
+
 
   _moveBoss(dt) {
     if (!this.boss || !this.boss.alive) return;
@@ -440,7 +476,29 @@ export class Game {
       ctx.strokeStyle = '#111827'; ctx.strokeRect(bx, by, bw, bh);
     }
 
-    // Main (sprite nếu có, fallback tròn)
+    // ✅ Hiệu ứng biến hình (aura nở ra)
+    if (this.evoFx.active) {
+      this.evoFx.t += dt;
+      const dur = 500; // 0.5s
+      const p = Math.min(1, this.evoFx.t / dur); // 0..1
+      if (p >= 1) {
+        this.evoFx.active = false;
+      } else {
+        const maxR = this.glider.r * 2.4;
+        const rAura = this.glider.r + (maxR - this.glider.r) * p;
+        const alpha = 1 - p;
+
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.8;
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(this.glider.x, this.glider.y, rAura, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
     // Main (sprite nếu có, scale theo evolution)
     if (this.skinReady && this.skin) {
       const evoScale = 1 + this.evoLevel * 0.15;      // mỗi level to hơn 15%
@@ -449,16 +507,36 @@ export class Game {
         : 1;
       const scale = evoScale * chargeScale;
       const s = this.glider.r * 2 * scale;
+
+      // ✅ chọn màu theo level để làm aura
+      const evoColors = ['#ffd166', '#a5b4fc', '#fb7185', '#f97316', '#4ade80'];
+      const auraColor = evoColors[this.evoLevel] || evoColors[0];
+
+      // vẽ vòng glow dưới sprite
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = auraColor;
+      ctx.beginPath();
+      ctx.arc(this.glider.x, this.glider.y, this.glider.r * (1.4 + this.evoLevel * 0.1), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // sprite nhân vật
       ctx.drawImage(this.skin,
         this.glider.x - s / 2,
         this.glider.y - s / 2,
         s, s
       );
     } else {
-      // fallback: hình tròn, cũng scale theo level
+      // fallback: hình tròn, cũng scale theo level + đổi màu theo evolution
       const scale = 1 + this.evoLevel * 0.15;
       const r = this.glider.r * scale;
-      ctx.fillStyle = '#ffd166';
+
+      // ✅ bảng màu theo level
+      const evoColors = ['#ffd166', '#a5b4fc', '#fb7185', '#f97316', '#4ade80'];
+      const bodyColor = evoColors[this.evoLevel] || evoColors[0];
+
+      ctx.fillStyle = bodyColor;
       ctx.beginPath();
       ctx.arc(this.glider.x, this.glider.y, r, 0, Math.PI * 2);
       ctx.fill();
@@ -492,13 +570,19 @@ export class Game {
       12, 18 + fs * 0.1 + fs * 3.20);
 
     // Hearts
-    const hx = W - 10, hy = 16, gap = 24, rr = 8;
+    const sc = this._scale();                 // ✅ thêm
+    const hx = W - 10 * sc;
+    const hy = 16 * sc;
+    const gap = 24 * sc;
+    const rr = 8 * sc;
+
     for (let i = 0; i < this.maxHearts; i++) {
       const x = hx - i * gap, y = hy;
       ctx.globalAlpha = i < this.hearts ? 1 : 0.25;
       this._heart(ctx, x, y, rr, i < this.hearts ? '#ef4444' : '#6b7280');
       ctx.globalAlpha = 1.0;
     }
+
 
     // Flash
     if (this.flash > 0) {

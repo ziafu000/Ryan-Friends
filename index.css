@@ -242,25 +242,6 @@ body {
     transform: translateY(-3px) scale(1.05);
 }
 
-/* Bot to top button rounded bubble */
-#botToTopBtn {
-    font-size: 32px;
-    color: var(--primary-orange);
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    cursor: pointer;
-    display: none;
-    background: #fff;
-    padding: .55rem;
-    border-radius: 999px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-}
-
-#botToTopBtn:hover {
-    color: var(--accent-yellow);
-    transform: translateY(-3px) scale(1.05);
-}
 
 /* Tiny text / captions more friendly */
 small,

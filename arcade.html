@@ -78,8 +78,13 @@
         </div>
       </div>
 
-      <p class="text-muted text-center mb-2"><small>Điều khiển: giữ <kbd>chuột/ngón tay</kbd> lên màn hình game để điều
-          khiển chủ thể</small></p>
+      <p class="text-muted text-center mb-2">
+        <small>
+          Di chuyển: rê <kbd>chuột/ngón tay</kbd> trong khung game.
+          Skill Dash: giữ <kbd>Space/ngón tay</kbd> để nạp, nhả <kbd>Space</kbd> để lướt.
+        </small>
+      </p>
+
 
       <!-- Khung game có overlay + nút fullscreen -->
       <div id="gameWrap" class="game-wrap d-flex justify-content-center mx-auto p-3">
@@ -278,6 +283,35 @@
 
     /* ========= Game flow ========= */
     let game;
+    // ===== Điều khiển skill bằng phím SPACE =====
+    let isSpaceDown = false;
+
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        // Một số browser dùng e.code = "Space", một số dùng e.key = " "
+        if (e.code === 'Space' || e.key === ' ') {
+          if (isSpaceDown) return;        // tránh spam khi keydown lặp
+          isSpaceDown = true;
+          if (game) game.startCharge();   // bắt đầu nạp chiêu
+          e.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+
+    window.addEventListener(
+      'keyup',
+      (e) => {
+        if (e.code === 'Space' || e.key === ' ') {
+          isSpaceDown = false;
+          if (game) game.releaseDash();   // nhả chiêu → dash
+          e.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+
     function onGameEnd(stats) {
       // gọi rewards / arcade logic có sẵn
       Arcade.onGameEnd(state, stats);   // nếu bạn đang có hàm này, giữ lại

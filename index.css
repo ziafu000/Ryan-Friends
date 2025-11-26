@@ -753,13 +753,14 @@ select.form-control {
 
 /* ================= HL toolbar responsive (mobile) =================== */
 @media (max-width: 575.98px) {
+
     /* Thanh công cụ HL: căng giữa, cho phép xuống dòng */
     #hl-controls {
         left: 50%;
         right: auto;
         transform: translateX(-50%);
-        bottom: 8px;
-        max-width: calc(100% - 16px);
+        bottom: 10%;
+        width: 80%;
         padding: 6px 8px;
         gap: 6px;
         flex-wrap: wrap;
@@ -790,13 +791,14 @@ select.form-control {
         bottom: 46px;
         transform: translateX(-50%);
         min-width: 0;
-        width: calc(180% - 16px);
-        max-width: 180%;
+        width: calc(130% - 16px);
+        max-width: 130%;
     }
 
     #hl-tools-menu.show {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 cột trên mobile */
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        /* 3 cột trên mobile */
         gap: 8px;
         justify-content: center;
     }
@@ -805,7 +807,114 @@ select.form-control {
         width: 100%;
         min-width: 0;
         height: auto;
-        white-space: normal;    /* cho text nút được wrap */
+        white-space: normal;
+        /* cho text nút được wrap */
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+}
+
+/* Màn rất nhỏ: menu Tools chỉ 1 cột */
+@media (max-width: 360px) {
+    #hl-tools-menu.show {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ================= HL toolbar responsive (mobile + toggle) =================== */
+
+/* Nút toggle (ẩn mặc định trên PC) */
+.hl-toggle-btn {
+    position: fixed;
+    left: 10px;
+    bottom: 16px;
+    z-index: 9999;
+    display: none;
+    /* chỉ show trên mobile */
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    padding: 0;
+}
+
+/* Mobile */
+@media (max-width: 575.98px) {
+
+    /* Thanh HL: mặc định ẩn ra ngoài màn + không bắt click */
+    #hl-controls {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%) translateY(130%);
+        bottom: 56px;
+        /* nhô lên trên nút toggle & không đè footer */
+        max-width: calc(100% - 16px);
+        padding: 6px 8px;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+        white-space: normal;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Khi body có class hl-controls-open → hiển thị thanh HL */
+    body.hl-controls-open #hl-controls {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    #hl-controls .btn {
+        margin-right: 4px;
+        flex: 1 1 40%;
+        min-width: 0;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    #hl-tools-wrap {
+        width: 100%;
+        text-align: center;
+    }
+
+    #hl-btn-tools {
+        width: 100%;
+    }
+
+    /* Nút toggle chỉ hiện trên mobile */
+    .hl-toggle-btn {
+        display: flex;
+        width: 60px;
+        height: 40px;
+    }
+
+    /* Menu Tools bung ra phía trên, rộng hơn khung HL một chút */
+    #hl-tools-menu {
+        left: 50%;
+        bottom: 46px;
+        transform: translateX(-50%);
+        min-width: 0;
+        width: calc(130% - 16px);
+        max-width: 130%;
+    }
+
+    #hl-tools-menu.show {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        /* 3 cột trên mobile */
+        gap: 8px;
+        justify-content: center;
+    }
+
+    #hl-tools-menu .btn {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        white-space: normal;
+        /* cho text nút được wrap */
         font-size: 0.8rem;
         padding: 6px 8px;
     }

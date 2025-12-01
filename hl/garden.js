@@ -33,12 +33,32 @@
         return (state.logs || []).find(x => x.date === date);
     }
 
+    function getStreakDaysWithBonus(state) {
+        // core streak do logger.js tính
+        const base = (state.streaks && state.streaks.days) || 0;
+
+        // bonus streak từ localStorage 'hl_streak' (nếu có)
+        let bonus = 0;
+        try {
+            const raw = localStorage.getItem('hl_streak');
+            if (raw != null) {
+                const n = parseInt(raw, 10);
+                if (!Number.isNaN(n)) bonus = n;
+            }
+        } catch (e) {
+            // nếu localStorage lỗi thì bỏ qua, cứ dùng base
+        }
+
+        return base + bonus;
+    }
+
+
     // Gọi từ logger.js sau khi lưu log & cập nhật streaks
     function onLogSaved(state, date) {
         const garden = ensureGarden(state);
 
-        // Unlock khi streak >= 9 ngày
-        const days = (state.streaks && state.streaks.days) || 0;
+        // Unlock khi streak >= 9 ngày (đã cộng bonus hl_streak nếu có)
+        const days = getStreakDaysWithBonus(state);
         if (days >= 9) garden.unlocked = true;
 
         const rec = getLogByDate(state, date);
@@ -65,7 +85,7 @@
     function getSummary() {
         const s = HL.getState();
         const garden = ensureGarden(s);
-        const days = (s.streaks && s.streaks.days) || 0;
+        const days = getStreakDaysWithBonus(s);
         return {
             unlocked: garden.unlocked,
             streakDays: days,
@@ -124,9 +144,26 @@
     };
 
     // Tự render khi vào garden.html
+    // Tự render khi vào garden.html, nhưng đợi HL sẵn sàng
     window.addEventListener("DOMContentLoaded", () => {
-        if (document.getElementById("hl-garden-root")) {
-            setTimeout(renderToRoot, 200);
+        function tryRender() {
+            const root = document.getElementById("hl-garden-root");
+            if (!root) return; // không phải garden.html thì thôi
+
+            // Đợi tới khi HL + HL.getState có mặt
+            if (!window.HL || typeof HL.getState !== "function") {
+                setTimeout(tryRender, 100);
+                return;
+            }
+
+            try {
+                renderToRoot();
+            } catch (err) {
+                console.error("Habit Garden render error:", err);
+            }
         }
+
+        // Gọi lần đầu
+        tryRender();
     });
 })();

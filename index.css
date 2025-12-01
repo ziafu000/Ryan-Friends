@@ -907,3 +907,113 @@ select.form-control {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ===== Habit Garden ===== */
+
+#hl-garden-root {
+    background: #fff8f2;
+    border-radius: 18px;
+    padding: 16px 18px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(230, 110, 20, 0.12);
+}
+
+.hl-garden-header h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-orange-dark);
+    margin-bottom: 4px;
+}
+
+.hl-garden-header p {
+    margin-bottom: 6px;
+    font-size: 0.92rem;
+    color: rgba(50, 34, 26, 0.8);
+}
+
+.hl-garden-submeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 0.86rem;
+    color: #64748b;
+}
+
+.hl-garden-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+.hl-garden-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 209, 102, 0.8);
+    box-shadow: 0 8px 20px rgba(230, 100, 10, 0.04);
+}
+
+.hl-garden-plant {
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 50% 35%, #facc15, #22c55e);
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* các level khác nhau chỉ là khác viền / glow */
+/* level 1 */
+.hl-garden-level-1 {
+    opacity: 0.85;
+}
+
+/* level 2 */
+.hl-garden-level-2 {
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.7);
+}
+
+/* level 3 */
+.hl-garden-level-3 {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.7);
+}
+
+/* level 4+ */
+.hl-garden-level-4,
+.hl-garden-level-5,
+.hl-garden-level-6 {
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.9);
+}
+
+.hl-garden-meta {
+    flex: 1;
+}
+
+.hl-garden-name {
+    font-weight: 700;
+    font-size: 0.96rem;
+    margin-bottom: 2px;
+}
+
+.hl-garden-progress {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.hl-garden-footer {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.hl-garden-locked {
+    padding: 14px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px dashed rgba(148, 163, 184, 0.9);
+    font-size: 0.9rem;
+}

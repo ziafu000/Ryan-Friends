@@ -9,10 +9,34 @@
     grades: [],    // [{date, subject, type:'15p'|'1tiet', score, phase:'A'|'B'}]
     kss: [],       // [{date, score:1..9}]
     streaks: { days: 0, lastDate: null },
-    nudges: []
+    nudges: [],
+
+    // NEW — Habit Garden
+    garden: {
+      unlocked: false,          // mở khi streak ≥ 9
+      rewardedDates: [],        // những ngày đã “tưới” rồi, tránh cộng 2 lần
+      plots: [
+        { id: 1, name: "Sleep Rhythm Tree", level: 1, exp: 0 },
+        { id: 2, name: "Morning Energy Sprout", level: 1, exp: 0 },
+        { id: 3, name: "Weekend Anchor Flower", level: 1, exp: 0 }
+      ]
+    }
   });
 
-  function getState() { try { return JSON.parse(localStorage.getItem(KEY)) || defState(); } catch (e) { return defState(); } }
+
+  function getState() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY)) || {};
+      const base = defState();
+      // merge: nếu key nào chưa có thì lấy từ base
+      Object.keys(base).forEach(k => {
+        if (raw[k] === undefined) raw[k] = base[k];
+      });
+      return raw;
+    } catch (e) {
+      return defState();
+    }
+  }
   function setState(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
 
   function exportJSON() {

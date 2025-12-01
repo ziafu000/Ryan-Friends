@@ -59,13 +59,29 @@
       const s = HL.getState();
       const rec = { date: inDate.value || new Date().toISOString().slice(0, 10), kind: selKind.value, bed: inBed.value || null, wake: inWake.value || null, note: note.value || "" };
       if (!rec.bed && !rec.wake) { msg.textContent = "Cần nhập ít nhất giờ ngủ hoặc giờ dậy."; return; }
+
       const ix = (s.logs || []).findIndex(x => x.date === rec.date);
       if (ix >= 0) s.logs[ix] = { ...s.logs[ix], ...rec }; else { s.logs = s.logs || []; s.logs.push(rec); }
+
       const k = Number(kss.value);
-      if (k >= 1 && k <= 9) { const kix = (s.kss || []).findIndex(x => x.date === rec.date); if (kix >= 0) s.kss[kix] = { date: rec.date, score: k }; else { s.kss = s.kss || []; s.kss.push({ date: rec.date, score: k }); } }
-      recomputeStreaks(s); HL.setState(s);
+      if (k >= 1 && k <= 9) {
+        const kix = (s.kss || []).findIndex(x => x.date === rec.date);
+        if (kix >= 0) s.kss[kix] = { date: rec.date, score: k };
+        else { s.kss = s.kss || []; s.kss.push({ date: rec.date, score: k }); }
+      }
+
+      // Cập nhật streak
+      recomputeStreaks(s);
+
+      // NEW: gọi Habit Garden nếu có
+      if (window.HL && HL.garden && typeof HL.garden.onLogSaved === "function") {
+        HL.garden.onLogSaved(s, rec.date);
+      }
+
+      HL.setState(s);
       // msg.textContent = "Đã lưu log. Streak: " + (s.streaks?.days || 0) + " ngày.";
     };
+
 
     return { open() { overlay.style.display = "block"; if (typeof render === 'function') render(); } };
   }

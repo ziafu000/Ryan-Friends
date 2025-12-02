@@ -13,8 +13,8 @@
 
     // NEW — Habit Garden
     garden: {
-      unlocked: false,          // mở khi streak ≥ 9
-      rewardedDates: [],        // những ngày đã “tưới” rồi, tránh cộng 2 lần
+      unlocked: false,          // sẽ mở khi streak ≥ 9 (tính động trong garden.js)
+      rewardedDates: [],
       plots: [
         { id: 1, name: "Sleep Rhythm Tree", level: 1, exp: 0 },
         { id: 2, name: "Morning Energy Sprout", level: 1, exp: 0 },
@@ -22,7 +22,6 @@
       ]
     }
   });
-
 
   function getState() {
     try {

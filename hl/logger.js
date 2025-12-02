@@ -73,13 +73,12 @@
       // Cập nhật streak
       recomputeStreaks(s);
 
-      // NEW: gọi Habit Garden nếu có
+      // NEW: báo cho Habit Garden
       if (window.HL && HL.garden && typeof HL.garden.onLogSaved === "function") {
         HL.garden.onLogSaved(s, rec.date);
       }
 
       HL.setState(s);
-      // msg.textContent = "Đã lưu log. Streak: " + (s.streaks?.days || 0) + " ngày.";
     };
 
 

@@ -1,4 +1,4 @@
-// hl/garden.js — Habit Garden logic
+// hl/garden.js — Habit Garden logic (hybrid: HTML sẵn trong garden.html)
 (function () {
     function ensureGarden(state) {
         if (!state.garden) {
@@ -33,37 +33,30 @@
         return (state.logs || []).find(x => x.date === date);
     }
 
+    // streak = core (logger) + bonus từ localStorage 'hl_streak'
     function getStreakDaysWithBonus(state) {
-        // core streak do logger.js tính
         const base = (state.streaks && state.streaks.days) || 0;
-
-        // bonus streak từ localStorage 'hl_streak' (nếu có)
         let bonus = 0;
         try {
-            const raw = localStorage.getItem('hl_streak');
+            const raw = localStorage.getItem("hl_streak");
             if (raw != null) {
                 const n = parseInt(raw, 10);
                 if (!Number.isNaN(n)) bonus = n;
             }
-        } catch (e) {
-            // nếu localStorage lỗi thì bỏ qua, cứ dùng base
-        }
-
+        } catch (e) { }
         return base + bonus;
     }
-
 
     // Gọi từ logger.js sau khi lưu log & cập nhật streaks
     function onLogSaved(state, date) {
         const garden = ensureGarden(state);
 
-        // Unlock khi streak >= 9 ngày (đã cộng bonus hl_streak nếu có)
-        const days = getStreakDaysWithBonus(state);
-        if (days >= 9) garden.unlocked = true;
-
         const rec = getLogByDate(state, date);
-        if (!rec || !rec.bed || !rec.wake) return;  // chỉ tưới khi có cả giờ ngủ & dậy
-        if (!garden.unlocked) return;
+        if (!rec || !rec.bed || !rec.wake) return; // chỉ tưới khi có cả giờ ngủ & dậy
+
+        // Chỉ tưới khi tổng streak (core + bonus) đủ ngưỡng mở
+        const isUnlocked = getStreakDaysWithBonus(state) >= 9;
+        if (!isUnlocked) return;
 
         // Mỗi ngày chỉ thưởng 1 lần
         if (!garden.rewardedDates.includes(date)) {
@@ -86,54 +79,77 @@
         const s = HL.getState();
         const garden = ensureGarden(s);
         const days = getStreakDaysWithBonus(s);
+        const unlocked = days >= 9;
+
+        // Optional: sync lại vào state cho thống nhất, nhưng UI chỉ dùng biến unlocked này
+        garden.unlocked = unlocked;
+
         return {
-            unlocked: garden.unlocked,
+            unlocked,
             streakDays: days,
             plots: garden.plots,
             rewardedCount: garden.rewardedDates.length
         };
     }
 
-    // Render đơn giản cho #hl-garden-root trong garden.html
+    // Helper: set class level cho plant, giữ lại class cũ khác
+    function setPlantLevelClass(el, level) {
+        if (!el) return;
+        const lvl = level || 1;
+        const baseClasses = el.className
+            .split(/\s+/)
+            .filter(c => c && !/^hl-garden-level-/.test(c));
+        baseClasses.push("hl-garden-level-" + lvl);
+        el.className = baseClasses.join(" ");
+    }
+
+    // Đồng bộ UI từ state vào HTML skeleton trong garden.html
     function renderToRoot() {
         const root = document.getElementById("hl-garden-root");
         if (!root) return;
+
         const summary = getSummary();
 
+        const lockedEl = document.getElementById("hl-garden-locked");
+        const mainEl = document.getElementById("hl-garden-main");
+
+        // Nếu chưa unlock → hiện view locked
         if (!summary.unlocked) {
-            root.innerHTML = `
-        <div class="hl-garden-locked">
-          <p><strong>Khu vườn thói quen Ryan</strong> sẽ mở khi bạn giữ streak ít nhất 9 ngày liên tiếp.</p>
-          <p>Hiện tại streak của bạn là <strong>${summary.streakDays}</strong> ngày. Hãy tiếp tục ghi Logger mỗi sáng nhé.</p>
-        </div>
-      `;
+            if (lockedEl) {
+                lockedEl.classList.remove("d-none");
+                const sLocked = document.getElementById("hl-garden-streak-locked");
+                if (sLocked) sLocked.textContent = String(summary.streakDays || 0);
+            }
+            if (mainEl) mainEl.classList.add("d-none");
             return;
         }
 
-        root.innerHTML = `
-      <div class="hl-garden-header">
-        <h3>Khu vườn thói quen Ryan</h3>
-        <p>Mỗi ngày bạn ghi đầy đủ giờ ngủ & giờ dậy, Ryan sẽ “tưới” 1 lần cho vườn. Cây lớn lên cùng với nhịp sống đều đặn hơn.</p>
-        <div class="hl-garden-submeta">
-          <span>Streak hiện tại: <strong>${summary.streakDays}</strong> ngày</span>
-          <span>Ngày đã tưới: <strong>${summary.rewardedCount}</strong></span>
-        </div>
-      </div>
-      <div class="hl-garden-grid">
-        ${summary.plots.map(p => `
-          <div class="hl-garden-card">
-            <div class="hl-garden-plant hl-garden-level-${p.level || 1}"></div>
-            <div class="hl-garden-meta">
-              <div class="hl-garden-name">${p.name}</div>
-              <div class="hl-garden-progress">Level ${p.level || 1} • ${p.exp || 0}/7 lần tưới tới level tiếp theo</div>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-      <div class="hl-garden-footer">
-        <small>Mẹo: cố gắng giữ giờ ngủ – dậy gần nhau giữa ngày học & cuối tuần, SJL giảm dần thì vườn sẽ càng “xanh” hơn.</small>
-      </div>
-    `;
+        // Đã unlock → hiện view main
+        if (lockedEl) lockedEl.classList.add("d-none");
+        if (mainEl) mainEl.classList.remove("d-none");
+
+        // Streak & số ngày tưới
+        const sStreak = document.getElementById("hl-garden-streak");
+        const sReward = document.getElementById("hl-garden-rewarded");
+        if (sStreak) sStreak.textContent = String(summary.streakDays || 0);
+        if (sReward) sReward.textContent = String(summary.rewardedCount || 0);
+
+        // 3 plots
+        summary.plots.forEach((p, idx) => {
+            const i = idx + 1; // id 1..3
+            const nameEl = document.getElementById("hl-garden-name-" + i);
+            const progEl = document.getElementById("hl-garden-progress-" + i);
+            const plantEl = document.getElementById("hl-garden-plant-" + i);
+
+            if (nameEl) nameEl.textContent = p.name || ("Plant #" + i);
+            if (progEl) {
+                const lvl = p.level || 1;
+                const exp = p.exp || 0;
+                progEl.textContent =
+                    "Level " + lvl + " • " + exp + "/7 lần tưới tới level tiếp theo";
+            }
+            setPlantLevelClass(plantEl, p.level);
+        });
     }
 
     window.HL = window.HL || {};
@@ -143,14 +159,12 @@
         renderToRoot
     };
 
-    // Tự render khi vào garden.html
     // Tự render khi vào garden.html, nhưng đợi HL sẵn sàng
     window.addEventListener("DOMContentLoaded", () => {
         function tryRender() {
             const root = document.getElementById("hl-garden-root");
-            if (!root) return; // không phải garden.html thì thôi
+            if (!root) return; // không phải garden.html
 
-            // Đợi tới khi HL + HL.getState có mặt
             if (!window.HL || typeof HL.getState !== "function") {
                 setTimeout(tryRender, 100);
                 return;
@@ -163,7 +177,6 @@
             }
         }
 
-        // Gọi lần đầu
         tryRender();
     });
 })();

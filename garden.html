@@ -87,9 +87,84 @@
         <!-- Khu vườn render bằng HL.garden -->
         <div class="row justify-content-center mt-3">
             <div class="col-lg-9">
-                <div id="hl-garden-root"></div>
+                <div id="hl-garden-root">
+                    <!-- View: BỊ KHÓA -->
+                    <div id="hl-garden-locked" class="hl-garden-locked d-none">
+                        <p><strong>Khu vườn thói quen Ryan</strong> sẽ mở khi bạn giữ streak ít nhất 9 ngày liên tiếp.
+                        </p>
+                        <p>
+                            Hiện tại streak của bạn là
+                            <strong id="hl-garden-streak-locked">0</strong>
+                            ngày. Hãy tiếp tục ghi Logger mỗi sáng nhé.
+                        </p>
+                    </div>
+
+                    <!-- View: ĐÃ MỞ -->
+                    <div id="hl-garden-main" class="hl-garden-main d-none">
+                        <div class="hl-garden-header">
+                            <h3>Khu vườn thói quen Ryan</h3>
+                            <p>
+                                Mỗi ngày bạn ghi đầy đủ giờ ngủ &amp; giờ dậy, Ryan sẽ “tưới” 1 lần cho vườn.
+                                Cây lớn lên cùng với nhịp sống đều đặn hơn.
+                            </p>
+                            <div class="hl-garden-submeta">
+                                <span>
+                                    Streak hiện tại:
+                                    <strong id="hl-garden-streak">0</strong> ngày
+                                </span>
+                                <span>
+                                    Ngày đã tưới:
+                                    <strong id="hl-garden-rewarded">0</strong>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="hl-garden-grid">
+                            <!-- Ô cây 1 -->
+                            <div class="hl-garden-card" data-plot-id="1">
+                                <div class="hl-garden-plant" id="hl-garden-plant-1"></div>
+                                <div class="hl-garden-meta">
+                                    <div class="hl-garden-name" id="hl-garden-name-1">Sleep Rhythm Tree</div>
+                                    <div class="hl-garden-progress" id="hl-garden-progress-1">
+                                        Level 1 • 0/7 lần tưới tới level tiếp theo
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ô cây 2 -->
+                            <div class="hl-garden-card" data-plot-id="2">
+                                <div class="hl-garden-plant" id="hl-garden-plant-2"></div>
+                                <div class="hl-garden-meta">
+                                    <div class="hl-garden-name" id="hl-garden-name-2">Morning Energy Sprout</div>
+                                    <div class="hl-garden-progress" id="hl-garden-progress-2">
+                                        Level 1 • 0/7 lần tưới tới level tiếp theo
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ô cây 3 -->
+                            <div class="hl-garden-card" data-plot-id="3">
+                                <div class="hl-garden-plant" id="hl-garden-plant-3"></div>
+                                <div class="hl-garden-meta">
+                                    <div class="hl-garden-name" id="hl-garden-name-3">Weekend Anchor Flower</div>
+                                    <div class="hl-garden-progress" id="hl-garden-progress-3">
+                                        Level 1 • 0/7 lần tưới tới level tiếp theo
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hl-garden-footer">
+                            <small>
+                                Mẹo: cố gắng giữ giờ ngủ – dậy gần nhau giữa ngày học &amp; cuối tuần,
+                                SJL giảm dần thì vườn sẽ càng “xanh” hơn.
+                            </small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
     <!-- Footer giống index -->
@@ -152,12 +227,15 @@
     </footer>
 
     <!-- HL scripts (có thể copy y chang index, thêm garden.js) -->
+    <script src="hl/toggleMenu.js"></script>
     <script src="hl/state.js"></script>
+    <script src="hl/sortButton.js"></script>
     <script src="hl/logger.js"></script>
-    <script src="hl/planner.js"></script>
+    <script src="hl/settings.js"></script>
     <script src="hl/sjl.metrics.js"></script>
     <script src="hl/sjl.heatmap.js"></script>
     <script src="hl/dashboard.js"></script>
+    <script src="hl/planner.js"></script>
     <script src="hl/examday.js"></script>
     <script src="hl/jitai.js"></script>
     <script src="hl/datalab.js"></script>

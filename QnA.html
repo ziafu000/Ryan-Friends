@@ -19,7 +19,6 @@
 </head>
 
 <body>
-    <!-- NAVBAR: copy từ index.html, chỉ đổi class active -->
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
         <a class="navbar-brand" href="index.html">
             <img src="img/Logo.png" alt="Logo" style="width:60px;">
@@ -33,25 +32,26 @@
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="index.html">Trang chủ</a>
+                    <a class="nav-link" href="index.html"><i class="fas fa-home"></i> Trang chủ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="introduce.html">Nhiệm vụ hằng ngày</a>
+                    <a class="nav-link" href="introduce.html"><i class="fas fa-tasks"></i> Nhiệm vụ hằng ngày</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="PSQI.html">Tính PSQI</a>
+                    <a class="nav-link" href="PSQI.html"><i class="fas fa-chart-bar"></i> Tính PSQI</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="arcade.html">Harmony Arcade</a>
+                    <a class="nav-link" href="arcade.html"><i class="fas fa-gamepad"></i> Harmony Arcade</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="SJL.html">SJL</a>
+                    <a class="nav-link" href="SJL.html"><i class="fas fa-moon"></i> SJL</a>
                 </li>
+                <!-- NEW: Habit Garden -->
                 <li class="nav-item">
-                    <a class="nav-link" href="garden.html">Khu vườn thói quen</a>
+                    <a class="nav-link" href="garden.html"><i class="fas fa-leaf"></i> Khu vườn thói quen</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="QnA.html">Talkshow Q&A <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="QnA.html"><i class="fas fa-comments"></i> Talkshow Q&A </a>
                 </li>
             </ul>
         </div>
@@ -67,14 +67,11 @@
                         Đây là không gian để tổng hợp video talkshow, phiên Q&A và hoạt động chia sẻ của team,
                         giúp thầy cô, phụ huynh và đối tác có thể xem nhanh cách tụi em làm việc với học sinh.
                     </p>
-                    <p>
-                        Trang này được thiết kế như một “portfolio sống” – mỗi khi có buổi talkshow mới, tụi em
-                        chỉ cần up thêm video / hình ảnh / ghi chú hoạt động tại đây.
-                    </p>
                 </div>
                 <div class="col-md-5 text-center">
-                    <img src="img/talkshow_cover.png" alt="Talkshow cover" class="img-fluid rounded shadow-sm">
-                    <!-- Minh có thể thay bằng hình bất kỳ: ví dụ ảnh chụp talkshow hoặc thumbnail Ryan -->
+                    <div class="card border-0 shadow-sm h-100">
+                        <img src="img/QA1.jpg" alt="Talkshow cover" class="img-fluid rounded shadow-sm">
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,65 +82,34 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">Video talkshow & Q&A</h2>
-                <small class="text-muted">Có thể nhúng video YouTube, Drive, hoặc file mp4 trực tiếp</small>
             </div>
 
-            <div class="row">
 
-                <!-- CARD VIDEO 1 – Minh chỉ cần đổi link src -->
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="embed-responsive embed-responsive-16by9">
-                            <!-- Ví dụ nhúng YouTube: thay ID sau /embed/ -->
-                            <iframe width="560" height="315"
-                                src="https://www.youtube.com/embed/HqQriH-jOtM?si=nAhnsiU8oOvci5Ns"
-                                title="YouTube video player" frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Talkshow 01 – Giới thiệu Harmony Loop & Social Jetlag</h5>
-                            <p class="card-text">
-                                Buổi chia sẻ với học sinh lớp X về Social Jetlag, cách nhận diện thói quen ngủ lệch
-                                và giới thiệu hệ sinh thái Harmony Loop.
-                            </p>
-                            <p class="mb-1">
-                                <i class="fa-regular fa-calendar"></i> Ngày: <strong>DD/MM/YYYY</strong>
-                            </p>
-                            <p class="mb-0">
-                                <i class="fa-solid fa-location-dot"></i> Địa điểm: <strong>Trường THPT ...</strong>
-                            </p>
-                        </div>
+
+            <!-- CARD VIDEO 1 – Minh chỉ cần đổi link src -->
+            <div class="mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <!-- Ví dụ nhúng YouTube: thay ID sau /embed/ -->
+                        <iframe width="560" height="315"
+                            src="https://www.youtube.com/embed/HqQriH-jOtM?si=nAhnsiU8oOvci5Ns"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Talkshow – Giới thiệu Harmony Loop & Social Jetlag</h5>
+                        <p class="card-text">
+                            Buổi chia sẻ với học sinh THPT về Social Jetlag, cách nhận diện thói quen ngủ lệch
+                            và giới thiệu hệ sinh thái Harmony Loop.
+                        </p>
                     </div>
                 </div>
-
-                <!-- CARD VIDEO 2 -->
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="embed-responsive embed-responsive-16by9">
-                            <!-- Có thể dùng link Google Drive dạng preview -->
-                            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/VIDEO_ID_2"
-                                allowfullscreen></iframe>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Talkshow 02 – Q&A về áp lực học tập & giấc ngủ</h5>
-                            <p class="card-text">
-                                Phiên hỏi đáp mở, học sinh gửi câu hỏi ẩn danh về stress, bài vở, cảm xúc
-                                và cách cân bằng ngủ – học – giải trí.
-                            </p>
-                            <p class="mb-1">
-                                <i class="fa-regular fa-calendar"></i> Ngày: <strong>DD/MM/YYYY</strong>
-                            </p>
-                            <p class="mb-0">
-                                <i class="fa-solid fa-location-dot"></i> Địa điểm: <strong>Online / Offline</strong>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Minh có thể copy thêm col-md-6 mb-4 để thêm nhiều video khác -->
             </div>
+
+            <!-- Minh có thể copy thêm col-md-6 mb-4 để thêm nhiều video khác -->
         </div>
+
     </section>
 
     <!-- PHOTO GALLERY -->
@@ -151,17 +117,17 @@
         <div class="container">
             <h2 class="mb-3">Hình ảnh hoạt động</h2>
             <p class="mb-4">
-                Một vài khoảnh khắc trong các buổi talkshow, workshop và phiên làm việc nhóm giữa học sinh và team.
-                Minh chỉ cần thay đường dẫn ảnh trong thư mục <code>img/</code>.
+                Một vài khoảnh khắc trong các buổi talkshow thực tế, workshop và phiên làm việc nhóm giữa học sinh và
+                team.
             </p>
 
             <div class="row">
                 <!-- Ảnh 1 -->
                 <div class="col-sm-6 col-md-4 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <img src="img/talkshow_1.jpg" class="card-img-top" alt="Talkshow 1">
+                        <img src="img/QA2.jpg" class="card-img-top" alt="Talkshow 1">
                         <div class="card-body">
-                            <p class="card-text">Buổi chia sẻ đầu tiên về Social Jetlag tại lớp X.</p>
+                            <p class="card-text">Buổi chia sẻ đầu tiên về Social Jetlag tại lớp.</p>
                         </div>
                     </div>
                 </div>
@@ -169,9 +135,9 @@
                 <!-- Ảnh 2 -->
                 <div class="col-sm-6 col-md-4 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <img src="img/talkshow_2.jpg" class="card-img-top" alt="Talkshow 2">
+                        <img src="img/QA3.jpg" class="card-img-top" alt="Talkshow 2">
                         <div class="card-body">
-                            <p class="card-text">Khoảnh khắc Q&A – học sinh đặt câu hỏi ẩn danh.</p>
+                            <p class="card-text">Khoảnh khắc Q&A – học sinh đặt câu hỏi</p>
                         </div>
                     </div>
                 </div>
@@ -179,9 +145,9 @@
                 <!-- Ảnh 3 -->
                 <div class="col-sm-6 col-md-4 mb-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <img src="img/talkshow_3.jpg" class="card-img-top" alt="Talkshow 3">
+                        <img src="img/QA4.jpg" class="card-img-top" alt="Talkshow 3">
                         <div class="card-body">
-                            <p class="card-text">Team trình bày demo hệ sinh thái Harmony Loop.</p>
+                            <p class="card-text">Buổi trình bày Harmony Loop</p>
                         </div>
                     </div>
                 </div>
@@ -199,17 +165,16 @@
                 <div class="col-md-6">
                     <h5>Đối tượng & mục tiêu</h5>
                     <ul>
-                        <li>Đối tượng: học sinh THPT (lớp X–Y, trường ...).</li>
+                        <li>Đối tượng: học sinh THPT.</li>
                         <li>Chủ đề chính: Social Jetlag, giấc ngủ, áp lực học tập, cảm xúc.</li>
                         <li>Mục tiêu: tăng nhận thức + tạo không gian an toàn để trò chuyện.</li>
                     </ul>
 
                     <h5 class="mt-4">Format buổi talkshow</h5>
                     <ul>
-                        <li>Phần 1 – Chia sẻ mở đầu (Ryan/Harmony Loop giới thiệu).</li>
+                        <li>Phần 1 – Chia sẻ mở đầu (Video Ryan giới thiệu).</li>
                         <li>Phần 2 – Mini activity / thảo luận nhóm.</li>
-                        <li>Phần 3 – Q&A ẩn danh qua form.</li>
-                        <li>Phần 4 – Kết nối với hệ sinh thái Harmony Loop (web, logger, game...).</li>
+                        <li>Phần 3 – Kết nối với hệ sinh thái Harmony Loop (web, logger, game...).</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
@@ -223,9 +188,8 @@
                         tụi em sẽ gửi kèm qua email hoặc file PDF riêng.
                     </p>
                     <p class="mb-0">
-                        <strong>Liên hệ:</strong> Minh &amp; Team Harmony Loop –
-                        <a href="mailto:youremail@example.com">youremail@example.com</a>
-                        (Minh thay địa chỉ thật).
+                        <strong>Liên hệ:</strong>Team Harmony Loop –
+                        <a href="mailto:youremail@example.com">ryanlittleboy2025@gmail.com</a>
                     </p>
                 </div>
             </div>

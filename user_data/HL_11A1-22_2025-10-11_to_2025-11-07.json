@@ -1,0 +1,417 @@
+{
+  "exported_at": "2025-11-10T13:38:13.309814Z",
+  "key": "hl_v1_state",
+  "state": {
+    "profile": {
+      "id": "11A1-22",
+      "created": "2025-10-11"
+    },
+    "settings": {
+      "phaseA_start": "2025-10-11",
+      "psqi_pre": 9,
+      "psqi_post": 7
+    },
+    "logs": [
+      {
+        "date": "2025-10-11",
+        "kind": "free",
+        "bed": "01:34",
+        "wake": "09:34",
+        "note": ""
+      },
+      {
+        "date": "2025-10-12",
+        "kind": "free",
+        "bed": "01:40",
+        "wake": "08:42",
+        "note": ""
+      },
+      {
+        "date": "2025-10-13",
+        "kind": "work",
+        "bed": "22:47",
+        "wake": "06:08",
+        "note": ""
+      },
+      {
+        "date": "2025-10-14",
+        "kind": "work",
+        "bed": "22:09",
+        "wake": "06:24",
+        "note": ""
+      },
+      {
+        "date": "2025-10-15",
+        "kind": "work",
+        "bed": "22:09",
+        "wake": "06:08",
+        "note": ""
+      },
+      {
+        "date": "2025-10-16",
+        "kind": "work",
+        "bed": "22:36",
+        "wake": "06:31",
+        "note": ""
+      },
+      {
+        "date": "2025-10-17",
+        "kind": "work",
+        "bed": "22:51",
+        "wake": "06:05",
+        "note": ""
+      },
+      {
+        "date": "2025-10-18",
+        "kind": "free",
+        "bed": "02:09",
+        "wake": "09:48",
+        "note": ""
+      },
+      {
+        "date": "2025-10-19",
+        "kind": "free",
+        "bed": "00:33",
+        "wake": "09:00",
+        "note": ""
+      },
+      {
+        "date": "2025-10-20",
+        "kind": "work",
+        "bed": "22:56",
+        "wake": "06:42",
+        "note": ""
+      },
+      {
+        "date": "2025-10-21",
+        "kind": "work",
+        "bed": "22:44",
+        "wake": "06:38",
+        "note": ""
+      },
+      {
+        "date": "2025-10-22",
+        "kind": "work",
+        "bed": "22:53",
+        "wake": "06:37",
+        "note": ""
+      },
+      {
+        "date": "2025-10-23",
+        "kind": "work",
+        "bed": "22:40",
+        "wake": "06:08",
+        "note": ""
+      },
+      {
+        "date": "2025-10-24",
+        "kind": "work",
+        "bed": "22:39",
+        "wake": "06:29",
+        "note": ""
+      },
+      {
+        "date": "2025-10-25",
+        "kind": "free",
+        "bed": "01:07",
+        "wake": "08:26",
+        "note": ""
+      },
+      {
+        "date": "2025-10-26",
+        "kind": "free",
+        "bed": "00:40",
+        "wake": "08:24",
+        "note": ""
+      },
+      {
+        "date": "2025-10-27",
+        "kind": "work",
+        "bed": "22:59",
+        "wake": "06:09",
+        "note": ""
+      },
+      {
+        "date": "2025-10-28",
+        "kind": "work",
+        "bed": "22:51",
+        "wake": "06:38",
+        "note": ""
+      },
+      {
+        "date": "2025-10-29",
+        "kind": "work",
+        "bed": "22:44",
+        "wake": "06:35",
+        "note": ""
+      },
+      {
+        "date": "2025-10-30",
+        "kind": "work",
+        "bed": "22:27",
+        "wake": "06:28",
+        "note": ""
+      },
+      {
+        "date": "2025-10-31",
+        "kind": "work",
+        "bed": "22:35",
+        "wake": "06:12",
+        "note": ""
+      },
+      {
+        "date": "2025-11-01",
+        "kind": "free",
+        "bed": "00:48",
+        "wake": "08:15",
+        "note": ""
+      },
+      {
+        "date": "2025-11-02",
+        "kind": "free",
+        "bed": "01:04",
+        "wake": "07:57",
+        "note": ""
+      },
+      {
+        "date": "2025-11-03",
+        "kind": "work",
+        "bed": "22:37",
+        "wake": "06:06",
+        "note": ""
+      },
+      {
+        "date": "2025-11-04",
+        "kind": "work",
+        "bed": "22:45",
+        "wake": "06:09",
+        "note": ""
+      },
+      {
+        "date": "2025-11-05",
+        "kind": "work",
+        "bed": "22:27",
+        "wake": "06:00",
+        "note": ""
+      },
+      {
+        "date": "2025-11-06",
+        "kind": "work",
+        "bed": "22:15",
+        "wake": "06:21",
+        "note": ""
+      },
+      {
+        "date": "2025-11-07",
+        "kind": "work",
+        "bed": "23:02",
+        "wake": "06:16",
+        "note": ""
+      }
+    ],
+    "grades": [
+      {
+        "date": "2025-10-07",
+        "subject": "Physic",
+        "type": "15p",
+        "score": 6.3,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-07",
+        "subject": "Chemistry",
+        "type": "15p",
+        "score": 5.9,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-11",
+        "subject": "Math",
+        "type": "15p",
+        "score": 6.7,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-13",
+        "subject": "English",
+        "type": "15p",
+        "score": 6.9,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-14",
+        "subject": "Literature",
+        "type": "15p",
+        "score": 7.4,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-23",
+        "subject": "History",
+        "type": "15p",
+        "score": 7.5,
+        "phase": "A"
+      },
+      {
+        "date": "2025-10-31",
+        "subject": "Math",
+        "type": "1tiet",
+        "score": 7.5,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-31",
+        "subject": "Physic",
+        "type": "1tiet",
+        "score": 7.6,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-31",
+        "subject": "Chemistry",
+        "type": "1tiet",
+        "score": 6.5,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-31",
+        "subject": "Literature",
+        "type": "1tiet",
+        "score": 7.8,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-31",
+        "subject": "English",
+        "type": "1tiet",
+        "score": 8.0,
+        "phase": "B"
+      },
+      {
+        "date": "2025-10-31",
+        "subject": "History",
+        "type": "1tiet",
+        "score": 8.6,
+        "phase": "B"
+      }
+    ],
+    "kss": [
+      {
+        "date": "2025-10-11",
+        "score": 6
+      },
+      {
+        "date": "2025-10-12",
+        "score": 6
+      },
+      {
+        "date": "2025-10-13",
+        "score": 5
+      },
+      {
+        "date": "2025-10-14",
+        "score": 6
+      },
+      {
+        "date": "2025-10-15",
+        "score": 6
+      },
+      {
+        "date": "2025-10-16",
+        "score": 6
+      },
+      {
+        "date": "2025-10-17",
+        "score": 6
+      },
+      {
+        "date": "2025-10-18",
+        "score": 4
+      },
+      {
+        "date": "2025-10-19",
+        "score": 6
+      },
+      {
+        "date": "2025-10-20",
+        "score": 6
+      },
+      {
+        "date": "2025-10-21",
+        "score": 6
+      },
+      {
+        "date": "2025-10-22",
+        "score": 6
+      },
+      {
+        "date": "2025-10-23",
+        "score": 6
+      },
+      {
+        "date": "2025-10-24",
+        "score": 6
+      },
+      {
+        "date": "2025-10-25",
+        "score": 5
+      },
+      {
+        "date": "2025-10-26",
+        "score": 6
+      },
+      {
+        "date": "2025-10-27",
+        "score": 6
+      },
+      {
+        "date": "2025-10-28",
+        "score": 6
+      },
+      {
+        "date": "2025-10-29",
+        "score": 6
+      },
+      {
+        "date": "2025-10-30",
+        "score": 6
+      },
+      {
+        "date": "2025-10-31",
+        "score": 6
+      },
+      {
+        "date": "2025-11-01",
+        "score": 5
+      },
+      {
+        "date": "2025-11-02",
+        "score": 4
+      },
+      {
+        "date": "2025-11-03",
+        "score": 5
+      },
+      {
+        "date": "2025-11-04",
+        "score": 6
+      },
+      {
+        "date": "2025-11-05",
+        "score": 6
+      },
+      {
+        "date": "2025-11-06",
+        "score": 6
+      },
+      {
+        "date": "2025-11-07",
+        "score": 5
+      }
+    ],
+    "streaks": {
+      "days": 0,
+      "lastDate": null
+    }
+  }
+}

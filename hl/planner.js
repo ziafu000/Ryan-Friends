@@ -36,24 +36,24 @@
       const tgtHour = Number(targetHM.split(":")[0]);
       // If this looks like a wake target, preserve it every day (user wants wake unchanged)
       if (tgtHour >= 4 && tgtHour <= 13) {
-      for (let i = 0; i < days; i++) plan.push(minToHM(tgt));
-      return plan;
+        for (let i = 0; i < days; i++) plan.push(minToHM(tgt));
+        return plan;
       }
 
       // Otherwise adjust toward target. For negative step we move earlier (reduce minutes),
       // but never overshoot the target in that direction.
       for (let i = 0; i < days; i++) {
-      if (step < 0) {
-        // minutes to move earlier to reach target along same-day backward direction
-        const delta = (cur - tgt + 1440) % 1440;
-        const move = Math.min(-step, delta);
-        cur = (cur - move + 1440) % 1440;
-      } else if (step > 0) {
-        const delta = (tgt - cur + 1440) % 1440;
-        const move = Math.min(step, delta);
-        cur = (cur + move) % 1440;
-      }
-      plan.push(minToHM(cur));
+        if (step < 0) {
+          // minutes to move earlier to reach target along same-day backward direction
+          const delta = (cur - tgt + 1440) % 1440;
+          const move = Math.min(-step, delta);
+          cur = (cur - move + 1440) % 1440;
+        } else if (step > 0) {
+          const delta = (tgt - cur + 1440) % 1440;
+          const move = Math.min(step, delta);
+          cur = (cur + move) % 1440;
+        }
+        plan.push(minToHM(cur));
       }
       return plan;
     }
@@ -82,9 +82,137 @@
     const info = el("div", { id: "hl_wa_info", style: { fontSize: "13px", color: "#6b7280" } }, "Cảnh báo lệch >60’ ngày Free; gợi ý bù ≤30’.");
     const warn = el("div", { id: "hl_wa_warn", style: { marginTop: "6px", fontWeight: "700" } }, "—");
     right.append(info, warn);
+    // Weekend Anchor Slider
+    right.append(el("div", { style: { marginTop: "10px", fontWeight: "800" } }, "Chọn giờ dậy cuối tuần (≤ 2h)"));
+    const waSlider = el("input", { id: "hl_wa_slider", type: "range", min: "0", max: "0", step: "15", style: { width: "100%" } });
+    const waVal = el("div", { id: "hl_wa_slider_val", style: { fontSize: "13px", color: "#6b7280", marginTop: "6px" } }, "—");
+    right.append(waSlider, waVal);
 
     grid.append(left, right);
     content.append(grid);
+    // =====================
+    // Planner 2.0 (Tasks + Mode + Soft streak)
+    // =====================
+    const TASKS = [
+      { id: "sleep_rhythm", label: "Ngủ & thức", desc: "Giữ khung ngủ/dậy hợp lí (đặc biệt đừng lệch quá mạnh)." },
+      { id: "evening_screen", label: "Màn hình buổi tối", desc: "Giảm màn hình 60’ trước ngủ / đổi sang hoạt động nhẹ." },
+      { id: "morning_light", label: "Ánh sáng buổi sáng", desc: "Ra sáng 2–5’ sau khi dậy để kéo nhịp sinh học." },
+      { id: "study_plan", label: "Học thông minh", desc: "Chốt 1 block học ngắn + ưu tiên môn chính." },
+      { id: "movement", label: "Vận động/giãn cơ", desc: "5–10’ giãn cơ/đi bộ giúp ngủ sâu hơn." },
+      { id: "weekend_anchor", label: "Weekend Anchor", desc: "Giữ giờ dậy cuối tuần lệch ≤2h so với ngày học." }
+    ];
+
+    const MODE_DEFAULTS = {
+      normal: ["sleep_rhythm", "evening_screen", "morning_light", "study_plan"],
+      exam: ["sleep_rhythm", "evening_screen", "morning_light", "study_plan"],
+      recovery: ["sleep_rhythm", "evening_screen", "morning_light", "movement"]
+    };
+
+    function todayISO() { return new Date().toISOString().slice(0, 10); }
+    function upsertPlanner(date, mode, tasks, source = "user") {
+      const s = HL.getState();
+      s.planner_log = s.planner_log || [];
+      const idx = s.planner_log.findIndex(x => x.date === date);
+      const rec = { date, mode, tasks: Array.from(new Set(tasks)), completedAt: new Date().toISOString(), source };
+      if (idx >= 0) s.planner_log[idx] = Object.assign({}, s.planner_log[idx], rec);
+      else s.planner_log.push(rec);
+      HL.setState(s);
+
+      if (HL.garden && typeof HL.garden.onPlannerSaved === "function") {
+        HL.garden.onPlannerSaved(HL.getState(), date);
+      }
+    }
+
+    function softStreakCount(s, dateISO) {
+      // đếm số ngày có planner trong 7 ngày gần nhất
+      const end = new Date(dateISO);
+      const set = new Set();
+      (s.planner_log || []).forEach(x => { if (x && x.date && x.completedAt) set.add(x.date); });
+      let count = 0;
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(end); d.setDate(end.getDate() - i);
+        const iso = d.toISOString().slice(0, 10);
+        if (set.has(iso)) count++;
+      }
+      return count;
+    }
+
+    // UI block
+    const plCard = el("div", { class: "card", style: { marginTop: "10px", padding: "12px" } });
+    const plHead = el("div", { style: { fontWeight: "900", marginBottom: "8px" } }, "Planner 2.0 — Nhiệm vụ tối");
+    const plRow = el("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" } });
+
+    const plDate = el("input", { id: "hl_pl_date", type: "date", class: "form-control" });
+    plDate.value = todayISO();
+
+    const plMode = el("select", { id: "hl_pl_mode", class: "form-control" }, [
+      el("option", { value: "normal" }, "Normal"),
+      el("option", { value: "exam" }, "Exam"),
+      el("option", { value: "recovery" }, "Recovery")
+    ]);
+
+    plRow.append(
+      el("div", {}, [el("div", { style: { fontSize: "12px", fontWeight: "700", marginBottom: "4px" } }, "Ngày"), plDate]),
+      el("div", {}, [el("div", { style: { fontSize: "12px", fontWeight: "700", marginBottom: "4px" } }, "Chế độ"), plMode])
+    );
+
+    const plTasksWrap = el("div", { id: "hl_pl_tasks", style: { marginTop: "8px" } });
+    const plMeta = el("div", { id: "hl_pl_meta", style: { marginTop: "8px", fontSize: "13px", color: "#6b7280" } }, "—");
+    const plSave = el("button", { class: "btn btn-primary", style: { marginTop: "8px" }, id: "hl_pl_save" }, "Lưu Planner tối");
+
+    plCard.append(plHead, plRow, plTasksWrap, plSave, plMeta);
+    content.append(plCard);
+
+    function renderPlannerUI() {
+      const s = HL.getState();
+      const d = plDate.value || todayISO();
+      const mode = plMode.value || "normal";
+
+      // ưu tiên gợi ý từ JITAI nếu đúng ngày
+      let preset = MODE_DEFAULTS[mode] || [];
+      if (s.planner_reco && s.planner_reco.date === d && Array.isArray(s.planner_reco.tasks)) {
+        preset = s.planner_reco.tasks;
+        if (s.planner_reco.mode) plMode.value = s.planner_reco.mode;
+      }
+
+      const exist = (s.planner_log || []).find(x => x.date === d);
+      const checked = new Set(exist ? (exist.tasks || []) : preset);
+
+      plTasksWrap.innerHTML = "";
+      TASKS.forEach(t => {
+        const id = "hl_task_" + t.id;
+        const cb = el("input", { type: "checkbox", id, style: { marginRight: "8px" } });
+        cb.checked = checked.has(t.id);
+
+        const line = el("div", { style: { display: "flex", alignItems: "flex-start", gap: "8px", padding: "6px 0" } }, [
+          cb,
+          el("div", {}, [
+            el("div", { style: { fontWeight: "800" } }, t.label),
+            el("div", { style: { fontSize: "13px", color: "#6b7280" } }, t.desc)
+          ])
+        ]);
+        plTasksWrap.appendChild(line);
+      });
+
+      const c = softStreakCount(s, d);
+      plMeta.textContent = `Planner 7 ngày: ${c}/7 (streak mềm — không toxic).`;
+    }
+
+    plDate.onchange = renderPlannerUI;
+    plMode.onchange = renderPlannerUI;
+
+    plSave.onclick = () => {
+      const d = plDate.value || todayISO();
+      const mode = plMode.value || "normal";
+      const tasks = [];
+      TASKS.forEach(t => {
+        const cb = document.getElementById("hl_task_" + t.id);
+        if (cb && cb.checked) tasks.push(t.id);
+      });
+      upsertPlanner(d, mode, tasks, "user");
+      renderPlannerUI();
+      alert("Đã lưu Planner tối.");
+    };
 
     btnPlan.onclick = () => {
       const curS = curSleep.value, curW = curWake.value, tgtS = tgtSleep.value, tgtW = tgtWake.value;
@@ -104,16 +232,57 @@
       if (!evs.length) { alert("Chưa có mục tiêu ngủ/dậy."); return; } downloadICS(evs, "hl_planner_reminders.ics");
     };
 
-    (function renderWeekend() {
-      const s = HL.getState(); const logs = (s.logs || []).slice().reverse();
-      const set = s.settings || {}; const tgtW = (set.target_wake || "").split(":"); const tgt = (tgtW.length === 2) ? (Number(tgtW[0]) * 60 + Number(tgtW[1])) : null;
+    function renderWeekend() {
+      const s = HL.getState();
+      const logs = (s.logs || []).slice().reverse();
+      const set = s.settings || {};
+
+      const tgtW = (set.target_wake || "").split(":");
+      const tgt = (tgtW.length === 2) ? (Number(tgtW[0]) * 60 + Number(tgtW[1])) : null;
+
+      if (tgt == null) {
+        warn.textContent = "Chưa đặt mục tiêu dậy (target_wake).";
+        waSlider.disabled = true;
+        waVal.textContent = "—";
+        return;
+      }
+
+      // slider range = target ± 120’
+      waSlider.disabled = false;
+      waSlider.min = String(tgt - 120);
+      waSlider.max = String(tgt + 120);
+
+      // default slider value = settings.weekend_wake hoặc target
+      const wk = set.weekend_wake ? hmToMin(set.weekend_wake) : tgt;
+      waSlider.value = String(wk);
+
       const latestFree = logs.find(x => (x.kind || "work") === "free" && x.wake);
-      if (!latestFree) { warn.textContent = "Chưa có log ngày Free để so sánh."; return; }
-      if (tgt == null) { warn.textContent = "Chưa đặt mục tiêu dậy (target_wake)."; return; }
-      const w = (x => { const [H, M] = x.split(":").map(Number); return H * 60 + M; })(latestFree.wake);
-      const diff = Math.min(Math.abs(w - tgt), 1440 - Math.abs(w - tgt));
-      warn.textContent = diff > 60 ? "⚠️ Cuối tuần lệch >60’ — tăng sáng buổi sáng + vận động nhẹ; bù ngủ ≤30’." : "Ổn: lệch ≤60’.";
-    })();
+      if (!latestFree) {
+        warn.textContent = "Chưa có log ngày Free để so sánh.";
+      } else {
+        const w = hmToMin(latestFree.wake);
+        const diff = minDiff(w, tgt);
+        warn.textContent = diff > 60
+          ? "⚠️ Cuối tuần lệch >60’ — tăng sáng buổi sáng + vận động nhẹ; bù ngủ ≤30’."
+          : "Ổn: lệch ≤60’.";
+      }
+
+      const diffSel = minDiff(Number(waSlider.value), tgt);
+      waVal.textContent = `Giờ dậy cuối tuần đang chọn: ${minToHM(Number(waSlider.value))} (lệch ${diffSel}’)`;
+    }
+
+    waSlider.oninput = () => {
+      const s = HL.getState();
+      s.settings = s.settings || {};
+      s.settings.weekend_wake = minToHM(Number(waSlider.value));
+      HL.setState(s);
+      renderWeekend();
+    };
+
+    function render() {
+      renderWeekend();
+      renderPlannerUI();
+    }
 
     return { open() { overlay.style.display = "block"; if (typeof render === 'function') render(); } };
   }

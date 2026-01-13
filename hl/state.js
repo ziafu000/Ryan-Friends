@@ -9,19 +9,77 @@
     grades: [],    // [{date, subject, type:'15p'|'1tiet', score, phase:'A'|'B'}]
     kss: [],       // [{date, score:1..9}]
     streaks: { days: 0, lastDate: null },
+    streaks: { days: 0, lastDate: null },
     nudges: [],
 
-    // NEW — Habit Garden
+    // NEW — Policy/Router exposure log
+    intervention_log: [],   // [{key,date,level,commandId,type,ctx,viewedAt,appliedAt,applied}]
+
+    // NEW — Planner 2.0
+    planner_log: [],        // [{date, mode:'normal'|'exam'|'recovery', tasks:[...], completedAt, source}]
+    planner_reco: null,     // {date, mode, tasks, from, commandId}
+
+    // NEW — Habit Garden 2.0
     garden: {
-      unlocked: false,          // sẽ mở khi streak ≥ 9 (tính động trong garden.js)
-      rewardedDates: [],
+      unlocked: false,
+      // schema mới: awarded map theo ngày → theo plotId (tránh tưới trùng)
+      awarded: {},          // { 'YYYY-MM-DD': { '1':true,'2':true,... } }
       plots: [
-        { id: 1, name: "Sleep Rhythm Tree", level: 1, exp: 0 },
-        { id: 2, name: "Morning Energy Sprout", level: 1, exp: 0 },
-        { id: 3, name: "Weekend Anchor Flower", level: 1, exp: 0 }
+        { id: 1, key: "sleep_rhythm", name: "Ngủ & thức", level: 1, exp: 0 },
+        { id: 2, key: "morning_light", name: "Ánh sáng buổi sáng", level: 1, exp: 0 },
+        { id: 3, key: "evening_screen", name: "Màn hình buổi tối", level: 1, exp: 0 },
+        { id: 4, key: "study_plan", name: "Học thông minh", level: 1, exp: 0 },
+        { id: 5, key: "movement", name: "Vận động/giãn cơ", level: 1, exp: 0 },
+        { id: 6, key: "weekend_anchor", name: "Weekend Anchor", level: 1, exp: 0 }
       ]
     }
   });
+
+  function migrateLegacyGameToPlanner(s) {
+    try {
+      const day = localStorage.getItem("game_day_date");
+      if (!day) return;
+
+      const raw = localStorage.getItem("game_day_completed") || "{}";
+      const done = JSON.parse(raw);
+
+      // Map quest -> planner tasks
+      const tasks = [];
+      if (done.q3) tasks.push("sleep_rhythm");
+      if (done.q1 || done.q2) tasks.push("evening_screen");
+      if (done.q4) { tasks.push("morning_light"); tasks.push("movement"); }
+
+      if (!tasks.length) return;
+      s.planner_log = s.planner_log || [];
+      const exist = s.planner_log.find(x => x.date === day);
+      if (exist) return;
+
+      s.planner_log.push({
+        date: day,
+        mode: "normal",
+        tasks: Array.from(new Set(tasks)),
+        completedAt: new Date().toISOString(),
+        source: "legacy_game"
+      });
+    } catch (e) { }
+  }
+
+  function migrateGardenAwardedSchema(s) {
+    try {
+      if (!s.garden) return;
+      if (!s.garden.awarded) s.garden.awarded = {};
+
+      // Nếu bản cũ có rewardedDates → coi như “tưới tất cả luống” ngày đó (để khỏi mất dữ liệu)
+      if (Array.isArray(s.garden.rewardedDates) && s.garden.rewardedDates.length) {
+        s.garden.rewardedDates.forEach(d => {
+          if (!s.garden.awarded[d]) {
+            s.garden.awarded[d] = { "1": true, "2": true, "3": true, "4": true, "5": true, "6": true };
+          }
+        });
+        delete s.garden.rewardedDates;
+      }
+    } catch (e) { }
+  }
 
   function getState() {
     try {
@@ -31,6 +89,8 @@
       Object.keys(base).forEach(k => {
         if (raw[k] === undefined) raw[k] = base[k];
       });
+      migrateLegacyGameToPlanner(raw);
+      migrateGardenAwardedSchema(raw);
       return raw;
     } catch (e) {
       return defState();

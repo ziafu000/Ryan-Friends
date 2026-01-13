@@ -47,7 +47,12 @@
     function addMinHM(hm, min) { const [h, m] = hm.split(":").map(Number); const x = (h * 60 + m + min + 1440) % 1440; return pad(Math.floor(x / 60)) + ":" + pad(x % 60); }
 
     btnSuggest.onclick = () => {
-      const t = exTime.value; if (!t) { sug.textContent = "Nhập giờ thi."; return; }
+      const t = exTime.value;
+      const st0 = HL.getState();
+      st0.settings = st0.settings || {};
+      st0.settings.exam_event = { date: exDate.value || null, time: exTime.value || null, savedAt: new Date().toISOString() };
+      HL.setState(st0);
+      if (!t) { sug.textContent = "Nhập giờ thi."; return; }
       const wake = addMinHM(t, -120), sleep = addMinHM(wake, -480);
       sug.textContent = `Gợi ý: ngủ ${sleep}, dậy ${wake}. Pre-test 60s: hít thở + kiểm vật dụng.`;
       const st = HL.getState(); st.settings = st.settings || {}; st.settings.target_sleep = sleep; st.settings.target_wake = wake; HL.setState(st);

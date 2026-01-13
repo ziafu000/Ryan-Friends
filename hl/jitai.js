@@ -34,6 +34,16 @@
     const b = new Date(iso); b.setHours(0, 0, 0, 0);
     return Math.round((b - a) / 86400000);
   }
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function minToHM(min) {
+    min = ((min % 1440) + 1440) % 1440;
+    return pad2(Math.floor(min / 60)) + ":" + pad2(min % 60);
+  }
+  function shiftHM(hm, deltaMin) {
+    const m = hmToMin(hm);
+    if (m == null) return hm;
+    return minToHM(m + deltaMin);
+  }
 
   function buildModal() {
     const overlay = el("div", {
@@ -65,8 +75,31 @@
     // Actions (đây là phần 3C)
     const btnApply = el("button", { id: "hl_jitai_apply", class: "btn btn-primary btn-sm" }, "Đổ vào Planner");
     const btnOpenPlanner = el("button", { id: "hl_jitai_open_planner", class: "btn btn-outline-secondary btn-sm" }, "Mở Planner");
-    const actions = el("div", { style: { display: "flex", gap: "8px", margin: "10px 0" } }, [btnApply, btnOpenPlanner]);
+    const btnWhatIf = el("button", { id: "hl_jitai_whatif_toggle", class: "btn btn-outline-secondary btn-sm" }, "What-if");
 
+    const actions = el("div", { style: { display: "flex", gap: "8px", margin: "10px 0", flexWrap: "wrap" } }, [
+      btnApply, btnOpenPlanner, btnWhatIf
+    ]);
+
+    // ===== What-if block (inside JITAI modal) =====
+    const whatifBox = el("div", {
+      id: "hl_jitai_whatif_box",
+      class: "card",
+      style: { padding: "12px", display: "none", marginBottom: "8px" }
+    });
+
+    const whatifTitle = el("div", { style: { fontWeight: "900", marginBottom: "6px" } }, "What-if Simulator");
+    const whatifDesc = el("div", { style: { fontSize: "13px", color: "#6b7280", marginBottom: "8px" } },
+      "Giả lập: nếu bạn dịch lịch ngủ/dậy sớm hơn X phút (giữ nguyên độ dài ngủ)."
+    );
+
+    const whatifSlider = el("input", { id: "hl_jitai_whatif_shift", type: "range", min: "0", max: "45", step: "15", style: { width: "100%" } });
+    const whatifLabel = el("div", { id: "hl_jitai_whatif_label", style: { marginTop: "6px", fontWeight: "800" } }, "Shift: 0’");
+    const whatifOut = el("div", { id: "hl_jitai_whatif_out", style: { marginTop: "10px", fontSize: "14px" } }, "—");
+
+    whatifBox.append(whatifTitle, whatifDesc, whatifSlider, whatifLabel, whatifOut);
+
+    // ===== history =====
     const history = el("div", {
       style: {
         marginTop: "8px", fontSize: "12px", color: "#6b7280",
@@ -74,9 +107,43 @@
       }
     }, "—");
 
-    content.append(banner, evidence, actions, history);
+    // append vào modal (CHỈ 1 LẦN)
+    content.append(banner, evidence, actions, whatifBox, history);
 
     let currentPolicy = null;
+
+    function computeWhatIf(shift) {
+      const s = HL.getState();
+      const logs = s.logs || [];
+      const today = new Date().toISOString().slice(0, 10);
+
+      if (!(window.SJL && typeof SJL.computeWindow === "function")) {
+        whatifOut.textContent = "Thiếu SJL engine.";
+        return;
+      }
+
+      const cur = SJL.computeWindow(today, logs);
+      if (!cur || !cur.hasData) {
+        whatifOut.textContent = "Chưa đủ 7 ngày có bed+wake để mô phỏng.";
+        return;
+      }
+
+      const simLogs = logs.map(x => {
+        if (!x || !x.bed || !x.wake) return x;
+        return Object.assign({}, x, {
+          bed: shiftHM(x.bed, -shift),
+          wake: shiftHM(x.wake, -shift)
+        });
+      });
+
+      const sim = SJL.computeWindow(today, simLogs);
+      const curS = Math.round(cur.SJL);
+      const simS = (sim && sim.hasData) ? Math.round(sim.SJL) : null;
+
+      whatifOut.innerHTML = (simS == null)
+        ? `Hiện tại: SJL_7d ≈ <b>${curS}’</b><br>Mô phỏng: —`
+        : `Hiện tại: SJL_7d ≈ <b>${curS}’</b><br>Mô phỏng (shift ${shift}’): SJL_7d ≈ <b>${simS}’</b><br><small style="color:#6b7280">Mô phỏng “dịch đều lịch” để demo.</small>`;
+    }
 
     function logExposure(state, policy) {
       state.intervention_log = state.intervention_log || [];
@@ -226,6 +293,25 @@
       else alert("Không thấy nút Planner (hl-btn-planner). Kiểm tra đã load hl/planner.js chưa.");
     };
 
+    // Toggle What-if inside JITAI
+    btnWhatIf.onclick = () => {
+      const isOpen = whatifBox.style.display !== "none";
+      whatifBox.style.display = isOpen ? "none" : "block";
+
+      // reset slider mỗi lần mở
+      if (!isOpen) {
+        whatifSlider.value = "0";
+        whatifLabel.textContent = "Shift: 0’";
+        computeWhatIf(0);
+      }
+    };
+
+    whatifSlider.oninput = () => {
+      const v = Number(whatifSlider.value);
+      whatifLabel.textContent = `Shift: ${v}’`;
+      computeWhatIf(v);
+    };
+
     btnApply.onclick = () => {
       if (!currentPolicy) evaluate();
       if (!currentPolicy) return;
@@ -257,6 +343,7 @@
     return {
       open() {
         overlay.style.display = "block";
+        whatifBox.style.display = "none";
         if (typeof render === "function") render();
       }
     };

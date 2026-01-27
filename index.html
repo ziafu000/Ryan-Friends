@@ -11,22 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
-    <!-- 3D UI Styles -->
-    <link rel="stylesheet" href="css/three-styles.css">
     <link rel="icon" href="img/Logo.png">
     <link rel="manifest" href="manifest.webmanifest">
-    <meta name="theme-color" content="#ff6a00">
-    <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <meta name="theme-color" content="#22d3ee">
 
 </head>
 
 <body>
-    <!-- 3D Loading Screen -->
-    <div class="hl-loading" id="hl-loading">
-        <div class="hl-loading-spinner"></div>
-    </div>
-
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
         <a class="navbar-brand" href="index.html">
             <img src="img/Logo.png" alt="Logo" style="width:60px;">
@@ -394,18 +385,6 @@
     <script src="hl/onboarding.js"></script>
     <script src="hl/sheets.sync.js"></script>
 
-    <!-- 3D UI Scripts -->
-    <script src="hl/three-core.js"></script>
-    <script src="hl/three-ui.js"></script>
-    <script>
-        // Hide loading screen when 3D is ready
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const loader = document.getElementById('hl-loading');
-                if (loader) loader.classList.add('hl-loaded');
-            }, 800);
-        });
-    </script>
 
 </body>
 

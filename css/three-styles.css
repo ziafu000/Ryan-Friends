@@ -1,0 +1,514 @@
+/**
+ * Harmony Loop - 3D UI Styles
+ * Glassmorphism, 3D transforms, animations
+ * Theme: Orange/Yellow - Multi-device optimized
+ */
+
+/* ============================================
+   CSS VARIABLES - 3D Theme Extension
+   ============================================ */
+:root {
+    /* 3D specific variables */
+    --hl-glass-bg: rgba(15, 23, 42, 0.7);
+    --hl-glass-border: rgba(255, 106, 0, 0.2);
+    --hl-glass-blur: 12px;
+    --hl-glow-primary: rgba(255, 106, 0, 0.4);
+    --hl-glow-accent: rgba(255, 209, 102, 0.3);
+    --hl-shadow-3d: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    
+    /* Animation timing */
+    --hl-transition-fast: 0.2s;
+    --hl-transition-medium: 0.4s;
+    --hl-transition-slow: 0.8s;
+    --hl-ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --hl-ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ============================================
+   3D MODE BASE STYLES
+   ============================================ */
+body.hl-3d-mode {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    perspective: 1000px;
+}
+
+/* Main 3D Background Container */
+.hl-3d-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.hl-3d-background canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ============================================
+   3D NAVBAR STYLES
+   ============================================ */
+.hl-navbar-3d {
+    background: var(--hl-glass-bg) !important;
+    backdrop-filter: blur(var(--hl-glass-blur));
+    -webkit-backdrop-filter: blur(var(--hl-glass-blur));
+    border: 1px solid var(--hl-glass-border) !important;
+    border-radius: 20px !important;
+    box-shadow: 
+        0 8px 32px var(--hl-glow-primary),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all var(--hl-transition-medium) var(--hl-ease-out-expo);
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.hl-navbar-3d::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 106, 0, 0.1) 0%,
+        transparent 50%,
+        rgba(255, 209, 102, 0.1) 100%
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+.hl-navbar-scrolled {
+    background: rgba(15, 23, 42, 0.95) !important;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 40px var(--hl-glow-primary);
+    transform: translateY(5px);
+}
+
+/* Nav Items 3D */
+.hl-nav-item-3d {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: all var(--hl-transition-fast) var(--hl-ease-spring);
+    overflow: hidden;
+}
+
+.hl-nav-item-3d::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-orange), var(--accent-yellow));
+    transition: all var(--hl-transition-medium) var(--hl-ease-out-expo);
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+.hl-nav-item-3d:hover::before {
+    width: 80%;
+}
+
+.hl-nav-item-3d:hover {
+    text-shadow: 0 0 20px var(--hl-glow-primary);
+}
+
+/* Ripple Effect */
+.hl-ripple-3d {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 209, 102, 0.4) 0%, transparent 70%);
+    transform: scale(0);
+    animation: hl-ripple 0.6s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes hl-ripple {
+    to {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   3D CARD STYLES
+   ============================================ */
+.hl-card-3d {
+    background: var(--hl-glass-bg) !important;
+    backdrop-filter: blur(var(--hl-glass-blur));
+    -webkit-backdrop-filter: blur(var(--hl-glass-blur));
+    border: 1px solid var(--hl-glass-border) !important;
+    border-left: 4px solid var(--primary-orange) !important;
+    box-shadow: var(--hl-shadow-3d);
+    transform-style: preserve-3d;
+    transition: all var(--hl-transition-medium) var(--hl-ease-out-expo);
+    will-change: transform;
+    position: relative;
+    overflow: visible;
+    
+    /* Entrance animation */
+    animation: hl-card-entrance 0.8s var(--hl-ease-out-expo) forwards;
+    opacity: 0;
+    transform: translateY(40px) rotateX(10deg);
+}
+
+@keyframes hl-card-entrance {
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+    }
+}
+
+/* Card glow effect on hover */
+.hl-card-3d::before {
+    content: '';
+    position: absolute;
+    top: var(--glow-y, 50%);
+    left: var(--glow-x, 50%);
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(
+        circle,
+        rgba(255, 106, 0, 0.3) 0%,
+        transparent 70%
+    );
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity var(--hl-transition-fast);
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 50%;
+}
+
+.hl-card-3d:hover::before {
+    opacity: 1;
+}
+
+/* Card content depth */
+.hl-card-3d .card-body {
+    transform: translateZ(20px);
+    transition: transform var(--hl-transition-medium) var(--hl-ease-out-expo);
+}
+
+.hl-card-3d .card-title {
+    color: var(--accent-yellow) !important;
+    text-shadow: 0 2px 10px rgba(255, 209, 102, 0.3);
+}
+
+/* Card images */
+.hl-card-3d img {
+    border-radius: 12px;
+    transition: transform var(--hl-transition-medium) var(--hl-ease-out-expo);
+}
+
+.hl-card-3d:hover img {
+    transform: scale(1.05) translateZ(30px);
+}
+
+/* ============================================
+   3D BUTTON STYLES
+   ============================================ */
+.hl-btn-3d {
+    background: linear-gradient(135deg, var(--primary-orange), var(--primary-orange-dark)) !important;
+    border: none !important;
+    box-shadow: 
+        0 4px 15px var(--hl-glow-primary),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform-style: preserve-3d;
+    transition: all var(--hl-transition-fast) var(--hl-ease-spring);
+    position: relative;
+    overflow: hidden;
+}
+
+.hl-btn-3d::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.hl-btn-3d:hover::before {
+    left: 100%;
+}
+
+.hl-btn-3d:hover {
+    box-shadow: 
+        0 10px 30px var(--hl-glow-primary),
+        0 0 20px var(--hl-glow-accent);
+}
+
+/* ============================================
+   3D CAROUSEL STYLES
+   ============================================ */
+.hl-carousel-3d {
+    perspective: 1200px;
+    overflow: visible !important;
+}
+
+.hl-carousel-3d .carousel-inner {
+    transform-style: preserve-3d;
+    overflow: visible !important;
+}
+
+.hl-carousel-item-3d {
+    transition: all 0.8s var(--hl-ease-out-expo);
+    transform-style: preserve-3d;
+}
+
+.hl-carousel-item-3d img {
+    border-radius: 24px !important;
+    box-shadow: var(--hl-shadow-3d);
+    transition: transform var(--hl-transition-medium) var(--hl-ease-out-expo);
+}
+
+.hl-carousel-item-3d.active img {
+    transform: translateZ(20px);
+}
+
+/* Carousel controls 3D */
+.hl-carousel-3d .carousel-control-prev,
+.hl-carousel-3d .carousel-control-next {
+    background: var(--hl-glass-bg);
+    backdrop-filter: blur(8px);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+    transition: all var(--hl-transition-fast) var(--hl-ease-spring);
+}
+
+.hl-carousel-3d .carousel-control-prev:hover,
+.hl-carousel-3d .carousel-control-next:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 30px var(--hl-glow-primary);
+}
+
+/* ============================================
+   SCROLL ANIMATIONS
+   ============================================ */
+.hl-scroll-animate {
+    opacity: 0;
+    transform: translateY(60px) rotateX(15deg);
+    transition: all 0.8s var(--hl-ease-out-expo);
+}
+
+.hl-scroll-animate.hl-visible {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+}
+
+/* Staggered children animation */
+.hl-visible > * {
+    animation: hl-stagger-in 0.6s var(--hl-ease-out-expo) forwards;
+}
+
+.hl-visible > *:nth-child(1) { animation-delay: 0.1s; }
+.hl-visible > *:nth-child(2) { animation-delay: 0.2s; }
+.hl-visible > *:nth-child(3) { animation-delay: 0.3s; }
+.hl-visible > *:nth-child(4) { animation-delay: 0.4s; }
+.hl-visible > *:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes hl-stagger-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   3D FOOTER STYLES
+   ============================================ */
+.hl-footer-3d {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98)) !important;
+    backdrop-filter: blur(var(--hl-glass-blur));
+    border-top: 1px solid var(--hl-glass-border);
+    position: relative;
+}
+
+.hl-footer-3d::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary-orange), var(--accent-yellow), var(--primary-orange), transparent);
+}
+
+.hl-social-3d {
+    transform-style: preserve-3d;
+    transition: all 0.5s var(--hl-ease-spring) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.hl-social-3d:hover {
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.4),
+        0 0 30px var(--hl-glow-primary);
+}
+
+/* ============================================
+   SJL PAGE SPECIFIC 3D ENHANCEMENTS
+   ============================================ */
+body.hl-3d-mode .sjl-hero,
+body.hl-3d-mode .sjl-section-card {
+    background: var(--hl-glass-bg) !important;
+    backdrop-filter: blur(var(--hl-glass-blur));
+    border: 1px solid var(--hl-glass-border) !important;
+    box-shadow: var(--hl-shadow-3d);
+}
+
+body.hl-3d-mode .sjl-hero-title,
+body.hl-3d-mode h1,
+body.hl-3d-mode h2,
+body.hl-3d-mode h3 {
+    color: var(--accent-yellow) !important;
+    text-shadow: 0 2px 20px var(--hl-glow-accent);
+}
+
+body.hl-3d-mode p,
+body.hl-3d-mode li,
+body.hl-3d-mode span {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.hl-3d-mode .sjl-img-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    padding: 1rem;
+    backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   RESPONSIVE 3D - MOBILE OPTIMIZATION
+   ============================================ */
+@media (max-width: 768px) {
+    .hl-3d-background {
+        opacity: 0.7; /* Reduce visual load on mobile */
+    }
+    
+    .hl-card-3d {
+        transform: none !important; /* Disable hover transforms on mobile */
+    }
+    
+    .hl-card-3d:hover {
+        transform: translateY(-5px) !important; /* Simpler hover */
+    }
+    
+    .hl-navbar-3d {
+        backdrop-filter: blur(8px);
+        transform: none !important;
+    }
+    
+    .hl-scroll-animate {
+        transform: translateY(30px); /* Reduce animation distance */
+    }
+}
+
+/* Reduce animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .hl-3d-background {
+        display: none;
+    }
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+.hl-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+
+.hl-loading.hl-loaded {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.hl-loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(255, 106, 0, 0.2);
+    border-top-color: var(--primary-orange);
+    border-radius: 50%;
+    animation: hl-spin 1s linear infinite;
+}
+
+@keyframes hl-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.hl-glass {
+    background: var(--hl-glass-bg);
+    backdrop-filter: blur(var(--hl-glass-blur));
+    border: 1px solid var(--hl-glass-border);
+}
+
+.hl-glow-text {
+    text-shadow: 0 0 20px var(--hl-glow-primary);
+}
+
+.hl-float {
+    animation: hl-float 3s ease-in-out infinite;
+}
+
+@keyframes hl-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.hl-pulse-glow {
+    animation: hl-pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes hl-pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px var(--hl-glow-primary); }
+    50% { box-shadow: 0 0 40px var(--hl-glow-accent); }
+}
